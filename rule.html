@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ルール | インターネットほけんしつ</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+    <!-- Tailwind Config（元サイトと共通のテーマ設定） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c7f0eb',
+                        primaryDark: '#a3dcd5',
+                        bgMain: '#ffffff',
+                        bgSub: '#f8fafc',
+                        textMain: '#334155',
+                        textSub: '#64748b',
+                        borderLight: '#e2e8f0',
+                        ruleCaution: '#ffc9c9',
+                    },
+                    fontFamily: {
+                        dot: ['"nitrods-font","DotGothic16"', 'sans-serif'],
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'paper-grid': "linear-gradient(#c7f0eb33 1px, transparent 1px), linear-gradient(90deg, #c7f0eb33 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'nitrods-font';
+            src: url('nitrods-font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #334155;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .bg-grid {
+            background-size: 20px 20px;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        ::selection { background: #c7f0eb; color: #1e293b; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7f0eb; }
+
+        .solid-panel {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px #c7f0eb;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .solid-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #c7f0eb;
+        }
+
+        .cross-icon {
+            position: relative;
+            width: 44px;
+            height: 44px;
+            animation: cross-glow 3s ease-in-out infinite;
+        }
+        .cross-icon::before, .cross-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #c7f0eb;
+            border: 3px solid #334155;
+            border-radius: 4px;
+        }
+        .cross-icon::before { top: 20%; bottom: 20%; left: 40%; right: 40%; }
+        .cross-icon::after { left: 20%; right: 20%; top: 40%; bottom: 40%; }
+        @keyframes cross-glow {
+            0%, 100% { filter: drop-shadow(0 0 0px #a3dcd5); }
+            50% { filter: drop-shadow(0 0 12px #a3dcd5); }
+        }
+
+        /* ==========================================
+           ルールページ 専用スタイル
+           ========================================== */
+
+        /* ルールカード（左に番号バッジ） */
+        .rule-card {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 12px;
+            box-shadow: 5px 5px 0px #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+        .rule-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #c7f0eb;
+        }
+
+        .rule-number {
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 50%;
+            border: 3px solid #334155;
+            background: #c7f0eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 3px 3px 0px #334155;
+        }
+        @media (max-width: 640px) {
+            .rule-number { width: 36px; height: 36px; min-width: 36px; font-size: 0.95rem; }
+        }
+
+        /* 特別な注意（自傷行為等の運用に関する補足）に使う枠 */
+        .note-box {
+            background: #fff9f4;
+            border: 2px dashed #f4a992;
+            border-radius: 10px;
+        }
+
+        /* 最終セクション（見守りの限界についての案内）の枠 */
+        .closing-box {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+        }
+
+        /* 改定日バッジ */
+        .updated-badge {
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            padding: 4px 14px;
+            border-radius: 999px;
+            border: 2px solid #334155;
+            background: #ffe3b3;
+            white-space: nowrap;
+        }
+
+        /* 特記（処罰規定）用パネル */
+        .special-panel {
+            background: #fffaf9;
+            border: 3px solid #334155;
+            border-radius: 12px;
+            box-shadow: 5px 5px 0px #ffc9c9;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .special-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #ffc9c9;
+        }
+        .special-number {
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+            border-radius: 50%;
+            border: 2px solid #334155;
+            background: #ffc9c9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        /* 目次リンク */
+        .toc-link {
+            border: 2px solid #e2e8f0;
+            background: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .toc-link:hover {
+            border-color: #a3dcd5;
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .split-title { text-align: center; }
+        .split-char { display: inline-block; }
+
+        @media (max-width: 767px) {
+            .solid-panel { box-shadow: 4px 4px 0px #c7f0eb; border-width: 2px; }
+            .rule-card { box-shadow: 3px 3px 0px #e2e8f0; }
+            section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <div class="bg-grid bg-paper-grid"></div>
+
+    <!-- シンプルヘッダー -->
+    <header class="w-full border-b-2 border-primary/50 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-lg md:text-2xl font-dot font-bold flex items-center gap-2 group">
+                <div class="w-6 h-6 relative group-hover:rotate-90 transition-transform duration-300">
+                    <div class="absolute inset-x-2 inset-y-0 bg-primary border-2 border-textMain rounded-sm"></div>
+                    <div class="absolute inset-y-2 inset-x-0 bg-primary border-2 border-textMain border-x-0"></div>
+                </div>
+                <span class="text-textMain">インターネットほけんしつ</span>
+            </a>
+            <a href="index.html" class="flex items-center gap-2 text-textSub font-dot text-sm hover:text-primaryDark transition-colors">
+                <i class="ph ph-arrow-left"></i>
+                <span class="hidden sm:inline">トップへもどる</span>
+            </a>
+        </nav>
+    </header>
+
+    <main class="relative z-10">
+        <!-- ==========================================
+             HERO: ルールタイトル
+             ========================================== -->
+        <section class="pt-16 pb-10 text-center relative overflow-hidden">
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="cross-icon mx-auto mb-6 reveal-hero"></div>
+                <div class="font-dot text-textSub mb-6 text-xs tracking-widest border-2 border-primary bg-white py-2 px-6 rounded-full inline-block shadow-sm reveal-hero-text opacity-0">
+                    <span id="typewriter-text"></span><span class="animate-pulse">_</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-dot font-bold text-textMain mb-4 reveal-title">
+                    ルール
+                </h1>
+                <div class="flex justify-center reveal-hero-text opacity-0 mb-6">
+                    <span class="updated-badge">2026年7月3日改定</span>
+                </div>
+                <p class="text-textSub font-sans max-w-xl mx-auto reveal-hero-text opacity-0 text-sm leading-relaxed">
+                    このルールは、投稿され次第すぐに適用されます。<br class="hidden md:block">
+                    書き込み可能なロールを受け取る前に、一度目を通していただけると嬉しいです。
+                </p>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             INTRO: サーバー紹介
+             ========================================== -->
+        <section class="pb-6">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <div class="solid-panel p-6 sm:p-8 reveal-up">
+                    <h2 class="font-dot text-lg sm:text-xl text-textMain mb-4">
+                        インターネットほけんしつは、日本語話者向けの雑談・創作コミュニティです
+                    </h2>
+                    <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                        ここは、各々が好きなようにひとりごとをつぶやいたり、創作物を貼ったりするためのサーバーです。
+                        保健室のような、ひとつの居場所だと思っていただけたら幸いです。
+                    </p>
+                    <p class="text-textSub font-sans text-sm leading-relaxed">
+                        病んだ時に吐き出したいけれど他のSNSでは見せたくない時や、誰にも言えない苦しみや相談を呟きたいときのために、それぞれ専用のチャンネルもご用意しています。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             RULES SECTION
+             ========================================== -->
+        <section class="pb-10">
+            <div class="container mx-auto px-6 max-w-3xl">
+
+                <div class="text-center mb-10 reveal-up">
+                    <h2 class="split-title text-2xl sm:text-3xl font-dot font-bold text-textMain mb-4">おねがい</h2>
+                    <p class="text-textSub font-sans text-sm max-w-2xl mx-auto leading-relaxed">
+                        きっと、ここに来てくれた方の中には、心が少し疲れていたり、痛みを抱えている人も多いと思います。<br class="hidden md:block">
+                        だからこそ、誰もが安心して過ごせる場所にしたいです。誰も傷つかないために、下記のお願いをご確認ください。
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-6" id="ruleList">
+
+                    <!-- ルール1 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">1</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">誰かの心を刺す言葉は控えること</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                暴言や、意図的に誰かを傷つけるような発言はお控えください。誰かが悲しむ姿を見ることは、ここにいる他の誰かの心をも削ることにつながってしまいます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ルール2 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">2</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">誰かの秘密や存在を晒さないこと</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                他者のプライバシーを侵害する行為や、晒し行為は固く禁じています。安心して心を預けられるよう、これらに該当する書き込みは予告なく削除させていただきます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ルール3 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">3</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">犯罪に触れることや、属性を傷つける発言はしないこと</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                                犯罪をほのめかすことや、差別的な発言は、見かけた場合に警告、または削除を行う場合があります。
+                            </p>
+                            <div class="note-box p-4">
+                                <p class="text-textSub font-sans text-xs sm:text-sm leading-relaxed">
+                                    ただし、OD（オーバードーズ）や自傷行為に関するお話については、禁止はしません。ですが、その言葉が他の誰かの古傷を痛めてしまうこともあるため、お話しする際は必ず「専用のチャンネル」をご利用いただき、お互いの心を守る工夫をお願いいたします。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ルール4 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">4</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">コミュニケーションを誰にも強要しないこと</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                ここは誰もが「ひとりごと」を気兼ねなく呟ける空気を何よりも大切にしています。誰かに返事を求めたり、反応がないことを責めたりしないでください。ただ隣にいるだけの距離感が、一番心地よい時もあります。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ルール5 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">5</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">出会い目的でこの場所を利用しないこと</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                恋愛的な出会いを求めたり、無理に個人的な連絡先を聞き出そうとしたりする行為は禁止しています。皆さんが警戒心を持たずに、羽を休められる空間づくりにご協力をお願いします。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ルール6 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">6</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">大切なあなた自身の情報（個人情報）を守ること</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                インターネットの海に一度放たれた情報は、完全に消し去ることがとても難しいものです。未来のあなたが後悔や不安で傷つかないよう、お名前やご住所、そしてあなた自身の形がわかる自撮り写真など、ご自身の大切な情報を手放す際は、どうか一度立ち止まって慎重になってください。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- ルール7 -->
+                    <div class="rule-card p-5 sm:p-6 flex gap-4 sm:gap-5 reveal-card">
+                        <div class="rule-number text-textMain">7</div>
+                        <div class="flex-1">
+                            <h3 class="font-dot text-base sm:text-lg text-textMain mb-2">管理人からの声には耳を傾けること</h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                この場所を安全に保つための、管理人からのお願いや指示には従っていただきますようお願いいたします。皆さんの居場所を守るため、どうしてもお約束を守っていただけない場合は、やむを得ずサーバーからご退出いただく措置をとることもございます。
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SPECIAL NOTE: 特記（処罰規定）
+             ========================================== -->
+        <section class="pb-10">
+            <div class="container mx-auto px-6 max-w-3xl">
+
+                <div class="text-center mb-10 reveal-up">
+                    <span class="updated-badge mb-4 inline-block">特記</span>
+                    <h2 class="split-title text-2xl sm:text-3xl font-dot font-bold text-textMain mb-4">上記のルールに於いて</h2>
+                    <p class="text-textSub font-sans text-sm max-w-2xl mx-auto leading-relaxed">
+                        コミュニティの安全と秩序を守るため、処罰に関する取り決めを以下に定めます。
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-8">
+
+                    <!-- 処罰の対象となる違反行為 -->
+                    <div class="special-panel p-6 sm:p-8 reveal-up">
+                        <h3 class="font-dot text-base sm:text-lg text-textMain mb-4 flex items-center gap-2">
+                            <i class="ph ph-warning text-2xl" style="color:#e0575f;"></i>
+                            処罰の対象となる違反行為
+                        </h3>
+                        <ol class="flex flex-col gap-3">
+                            <li class="flex gap-3 items-start">
+                                <span class="special-number">1</span>
+                                <p class="text-textSub font-sans text-sm leading-relaxed pt-1">事前の警告や注意を無視して繰り返される違反行為。</p>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="special-number">2</span>
+                                <p class="text-textSub font-sans text-sm leading-relaxed pt-1">コミュニティの運営、および他の参加者の活動に著しい支障をきたすと管理者およびモデレーターが判断した重大な違反行為。</p>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="special-number">3</span>
+                                <p class="text-textSub font-sans text-sm leading-relaxed pt-1">過去にKick処置を受けたユーザーによる無許可での再参加、および再参加後における一切の違反行為。</p>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="special-number">4</span>
+                                <p class="text-textSub font-sans text-sm leading-relaxed pt-1">処罰を逃れることを目的とした別アカウント（サブアカウント）の作成、およびそれを用いたコミュニティへの参加行為。</p>
+                            </li>
+                            <li class="flex gap-3 items-start">
+                                <span class="special-number">5</span>
+                                <p class="text-textSub font-sans text-sm leading-relaxed pt-1">当コミュニティ外の場であっても、重大なトラブルを引き起こし、当コミュニティの安全性や秩序を著しく脅かす恐れがあると管理者が判断した行為。</p>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <!-- 処罰の執行と緊急時の例外対応 -->
+                    <div class="special-panel p-6 sm:p-8 reveal-up">
+                        <h3 class="font-dot text-base sm:text-lg text-textMain mb-4 flex items-center gap-2">
+                            <i class="ph ph-gavel text-2xl" style="color:#e0575f;"></i>
+                            処罰の執行と緊急時の例外対応
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                            上記のいずれかに該当する行為が確認されたユーザーに対しては、管理人間での協議の上、Kick、あるいは最悪の場合はBan処置を実行します。
+                        </p>
+                        <p class="text-textSub font-sans text-sm leading-relaxed">
+                            ただし、無差別なスパム行為や、サーバーの構造や機能に対する極めて悪質で破壊的な荒らし行為など、コミュニティの存続を脅かす緊急性の高い事態においては、被害の拡大を最小限に食い止めるため、事前の管理者間協議を経ることなく、管理者の権限による即時のBan等の防衛措置を特例として認め、事後に管理人間で報告と協議を行うものとします。
+                        </p>
+                    </div>
+
+                    <!-- Kick処置を受けた者の再参加と厳格な対応について -->
+                    <div class="special-panel p-6 sm:p-8 reveal-up">
+                        <h3 class="font-dot text-base sm:text-lg text-textMain mb-4 flex items-center gap-2">
+                            <i class="ph ph-door-open text-2xl" style="color:#e0575f;"></i>
+                            Kick処置を受けた者の再参加と厳格な対応について
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                            過去にKickされたユーザーについては、その行為がコミュニティや関係当事者に多大な迷惑と影響を与えた事実を重く受け止めます。
+                        </p>
+                        <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                            そのため、当コミュニティへの再参加を希望する場合は、いかなる理由があろうとも、事前に管理人および関係当事者へ直接連絡を取り、明示的な許可を得た場合のみ参加が認められます。
+                        </p>
+                        <p class="text-textSub font-sans text-sm leading-relaxed">
+                            なお、事前の許可を得ずに行われた無断での再参加、別アカウントを用いた潜入行為、その他の例外的なケース、および再参加後にレベルを問わず再度違反行為に及んだ場合については、いかなる情状酌量の余地もなく、管理人の権限に基づき即座に例外なきBan処置を執行するものとします。
+                        </p>
+                    </div>
+
+                    <!-- 処置に関する免責および異議申し立てについて -->
+                    <div class="special-panel p-6 sm:p-8 reveal-up">
+                        <h3 class="font-dot text-base sm:text-lg text-textMain mb-4 flex items-center gap-2">
+                            <i class="ph ph-shield-warning text-2xl" style="color:#e0575f;"></i>
+                            処置に関する免責および異議申し立てについて
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                            本規約に基づく処罰の決定、およびその判断に至った理由や議論の過程に関して、運営側は対象者に対して詳細な情報開示の義務を一切負いません。
+                        </p>
+                        <p class="text-textSub font-sans text-sm leading-relaxed">
+                            また、コミュニティの円滑な運営を維持するため、原則として下された処分に対する異議申し立ては受け付けず、運営側の決定を最終的かつ絶対的なものとします。
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- その他の細則についての案内 -->
+                <div class="note-box p-6 sm:p-8 mt-8 reveal-up flex flex-col sm:flex-row sm:items-center gap-4">
+                    <i class="ph ph-file-pdf text-3xl text-[#e0575f] flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <p class="text-textSub font-sans text-sm leading-relaxed">
+                            それ以外の細部のルールは下記のPDFファイルを確認してください。
+                        </p>
+                    </div>
+                    <a href="rule.pdf" target="_blank" rel="noopener noreferrer" class="flex-shrink-0 inline-flex items-center justify-center gap-2 bg-white border-2 border-textMain text-textMain px-5 py-2.5 rounded-full font-dot text-sm hover:bg-primary transition-colors shadow-[2px_2px_0px_#334155]">
+                        <i class="ph ph-file-pdf text-lg"></i>
+                        <span>rule.pdf を見る</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             CLOSING: 見守りの限界についてのご案内
+             ========================================== -->
+        <section class="pb-24">
+            <div class="container mx-auto px-6 max-w-3xl">
+                <div class="closing-box p-6 sm:p-8 reveal-up">
+                    <h2 class="font-dot text-base sm:text-lg text-textMain mb-3 flex items-center gap-2">
+                        <i class="ph ph-hand-heart text-primaryDark text-xl"></i>
+                        この場所で起きる出来事と、現実的なお願い
+                    </h2>
+                    <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                        私たちは皆さんが安心して羽を休められる「場所」を用意し、できる限りの見守りを行いますが、人と人との間に生まれる複雑な問題のすべてを解決できる力は持っていません。
+                    </p>
+                    <p class="text-textSub font-sans text-sm leading-relaxed mb-3">
+                        そのため、万が一参加者同士の間で個人的なトラブルが起きてしまった場合、最終的には当事者の方々ご自身で向き合っていただくことになります。
+                    </p>
+                    <p class="text-textSub font-sans text-sm leading-relaxed">
+                        どうか、お互いを思いやる優しい気持ちを忘れずに、この場所を利用してください。
+                    </p>
+                </div>
+
+                <div class="text-center mt-12 reveal-up">
+                    <a href="index.html#join" class="inline-flex items-center gap-3 bg-primary border-4 border-textMain text-textMain px-8 py-4 font-dot text-lg rounded-xl hover:-translate-y-1 hover:shadow-[6px_6px_0px_#334155] transition-all duration-200">
+                        <i class="ph ph-door-open text-2xl"></i>
+                        <span>ルールに同意してサーバーへ</span>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- フッター -->
+        <footer class="py-8 bg-textMain text-center font-dot text-sm text-white/70 relative z-10">
+            <div class="flex justify-center items-center gap-2 mb-2">
+                <div class="w-4 h-4 bg-primary rounded-full"></div>
+                <p>インターネットほけんしつ</p>
+            </div>
+            <p>&copy; 2026 インターネットほけんしつ Administration.</p>
+            <p class="mt-2">
+                <a href="https://metalepsis-delta.com/contact" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-primary underline transition-colors">
+                    サイトに関するお問い合わせはこちらから
+                </a>
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // --- タイプライター風メッセージ ---
+        const typewriterElement = document.getElementById("typewriter-text");
+        const messages = ["ルールを確認しています..."];
+        const heroTl = gsap.timeline();
+        if (window.gsap && gsap.plugins && gsap.plugins.text) {
+            heroTl.to(typewriterElement, { text: messages[0], duration: 1.2, ease: "none" });
+        } else {
+            typewriterElement.textContent = messages[0];
+        }
+        heroTl
+            .from(".reveal-hero", { duration: 1.2, scale: 0, opacity: 0, rotation: 180, ease: "back.out(1.5)" }, "-=0.4")
+            .from(".reveal-title", { duration: 1, y: 30, opacity: 0, ease: "power3.out" }, "-=0.8")
+            .to(".reveal-hero-text", { duration: 0.8, opacity: 1, y: 0, ease: "power2.out", stagger: 0.15 }, "-=0.4");
+
+        // --- スクロール連動の出現アニメーション ---
+        gsap.utils.toArray('.reveal-up').forEach((elem) => {
+            gsap.from(elem, {
+                scrollTrigger: { trigger: elem, start: "top 85%", toggleActions: "play none none reverse" },
+                y: 30,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power3.out"
+            });
+        });
+
+        // --- ルールカードのカスケード出現 ---
+        gsap.utils.toArray('.reveal-card').forEach((elem, i) => {
+            gsap.from(elem, {
+                scrollTrigger: { trigger: elem, start: "top 88%", toggleActions: "play none none reverse" },
+                y: 28,
+                opacity: 0,
+                duration: 0.6,
+                delay: (i % 4) * 0.06,
+                ease: "back.out(1.2)"
+            });
+        });
+
+        // --- 見出しを1文字ずつ演出 ---
+        gsap.utils.toArray('.split-title').forEach((title) => {
+            const text = title.textContent.trim();
+            title.textContent = "";
+            [...text].forEach((char) => {
+                const span = document.createElement('span');
+                span.className = 'split-char';
+                span.textContent = char === " " ? "\u00A0" : char;
+                title.appendChild(span);
+            });
+            gsap.from(title.querySelectorAll('.split-char'), {
+                scrollTrigger: { trigger: title, start: "top 85%", toggleActions: "play none none reverse" },
+                opacity: 0,
+                y: 20,
+                rotateX: -60,
+                duration: 0.6,
+                stagger: 0.04,
+                ease: "back.out(1.7)"
+            });
+        });
+
+        // --- ルールカードのマウス追従（軽い3D傾き） ---
+        gsap.utils.toArray('.rule-card, .solid-panel, .special-panel').forEach((card) => {
+            const quickX = gsap.quickTo(card, "rotationY", { duration: 0.4, ease: "power3.out" });
+            const quickY = gsap.quickTo(card, "rotationX", { duration: 0.4, ease: "power3.out" });
+            card.style.transformStyle = "preserve-3d";
+            card.style.willChange = "transform";
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const relX = (e.clientX - rect.left) / rect.width - 0.5;
+                const relY = (e.clientY - rect.top) / rect.height - 0.5;
+                quickX(relX * 6);
+                quickY(-relY * 6);
+            });
+            card.addEventListener('mouseleave', () => {
+                quickX(0);
+                quickY(0);
+            });
+        });
+    </script>
+</body>
+</html>

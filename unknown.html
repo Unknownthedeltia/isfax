@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>???</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    text-align: center;
+    background: #fff;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    margin: 40vh 0;
+    color: #333;
+  }
+  #password-area {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    color: #eee;
+  }
+  #password-area input {
+    padding: 10px;
+    font-size: 16px;
+    margin-top: 20px;
+    border-radius: 4px;
+    border: none;
+  }
+  #password-area button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-top: 15px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    background: #4caf50;
+    color: white;
+  }
+  #password-area button:hover {
+    background: #45a049;
+  }
+  #error-msg {
+    color: #ff6b6b;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+</style>
+</head>
+<body>
+
+    <h1>???</h1>
+    <h2>???</h2>
+    <h3>???</h3>
+    <h4>???</h4>
+    <h5>???</h5>
+    <h6>???</h6>
+
+    <div id="password-area">
+      <p>ここまでスクロールしてくれてありがとう。</p>
+      <p>パスワードを入力してください:</p>
+      <input type="password" id="pw" placeholder="password">
+      <button onclick="checkPassword()">送信</button>
+      <div id="error-msg"></div>
+    </div>
+
+<script>
+  const CORRECT_PASSWORD = "test"; // 後で変える
+  const REDIRECT_URL = "Secret.html";
+
+  function checkPassword() {
+    const input = document.getElementById("pw").value;
+    const errorMsg = document.getElementById("error-msg");
+    if (input === CORRECT_PASSWORD) {
+      window.location.href = REDIRECT_URL;
+    } else {
+      errorMsg.textContent = "パスワードが違います。";
+    }
+  }
+
+  document.getElementById("pw").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+      checkPassword();
+    }
+  });
+</script>
+
+</body>
+</html>

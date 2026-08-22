@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>星が落ちる日はいつ？</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+    /* ニトロDSフォントの読み込み（index.htmlと同一設定） */
+    @font-face {
+        font-family: 'nitrods-font';
+        src: url('nitrods-font.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    body {
+        font-family: "nitrods-font","DotGothic16", sans-serif;
+        background-color: #0a0a1a;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    label {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 1rem;
+    }
+
+    input[type="email"],
+    input[type="text"] {
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+        font-family: "nitrods-font","DotGothic16", sans-serif;
+        font-size: 1rem;
+    }
+
+    button {
+        padding: 12px;
+        border-radius: 6px;
+        border: none;
+        background-color: #4a4ad0;
+        color: #ffffff;
+        font-family: "nitrods-font","DotGothic16", sans-serif;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #6a6af0;
+    }
+</style>
+</head>
+<body>
+
+<h1>星が落ちる日はいつ？</h1>
+
+<form action="https://formsubmit.co/Internet.hokenshitsu@gmail.com" method="POST">
+    <label for="email">
+        <input type="email" id="email" name="email" placeholder="????@mail.com" required>
+    </label>
+
+    <label for="answer">
+        <input type="text" id="answer" name="answer" placeholder="">
+    </label>
+
+    <!-- メールの件名を指定 -->
+    <input type="hidden" name="_subject" value="星が落ちる日はいつ？ 回答フォーム">
+
+    <!-- 送信後にJSONではなく通常のレスポンスを受け取る（今はドメイン未設定のため一旦オフ） -->
+    <input type="hidden" name="_captcha" value="false">
+
+    <!-- 送信後のリダイレクト先。ドメイン取得後に自分のサイトのURLへ変更してください -->
+    <!-- <input type="hidden" name="_next" value="https://your-domain.com/index.html"> -->
+
+    <button type="submit">送信</button>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ひみつの日記</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+    /* ニトロDSフォントの読み込み（index.htmlと同一設定） */
+    @font-face {
+        font-family: 'nitrods-font';
+        src: url('nitrods-font.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    :root {
+        --bg: #0b0f10;
+        --ink: #c7f0eb;
+        --ink-dim: #6f938e;
+        --panel: #10171768;
+        --line: #1c2b29;
+        --accent: #4dd6c4;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "nitrods-font", "DotGothic16", sans-serif;
+        letter-spacing: 0.08em;
+        line-height: 2;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    a { color: var(--ink); text-decoration: underline; }
+
+    /* うっすらとした走査線でDSの画面らしさを出す */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+            to bottom,
+            rgba(199, 240, 235, 0.025) 0px,
+            rgba(199, 240, 235, 0.025) 1px,
+            transparent 2px,
+            transparent 3px
+        );
+        z-index: 0;
+    }
+
+    .topbar {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: var(--ink-dim);
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .topbar a { text-decoration: none; border-bottom: 1px dashed var(--ink-dim); }
+    .topbar a:hover { color: var(--ink); border-color: var(--ink); }
+
+    .diary {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .entry {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--accent);
+        padding: 1.4rem 1.6rem;
+        text-align: left;
+        position: relative;
+        opacity: 0; /* GSAPで表示 */
+    }
+
+    .entry-date {
+        font-size: 0.7rem;
+        color: var(--ink-dim);
+        display: flex;
+        gap: 0.6em;
+        align-items: baseline;
+        margin-bottom: 0.6rem;
+    }
+
+    .entry-date .cursor {
+        display: inline-block;
+        width: 0.5em;
+        height: 1em;
+        background: var(--accent);
+        vertical-align: -0.15em;
+    }
+
+    .entry-title {
+        font-size: 1.15rem;
+        color: var(--accent);
+        margin: 0 0 0.7rem 0;
+        line-height: 1.6;
+    }
+
+    .entry-title::before { content: "» "; color: var(--ink-dim); }
+
+    .entry-body {
+        font-size: 0.9rem;
+        line-height: 2;
+        color: var(--ink);
+        white-space: pre-wrap;
+        margin: 0;
+    }
+
+    .entry + .entry { margin-top: 0; }
+
+    /* 例エントリーには小さな注記ラベルを付ける */
+    .entry.is-example .entry-title::after {
+        content: "（例）";
+        font-size: 0.6em;
+        color: var(--ink-dim);
+        margin-left: 0.6em;
+    }
+
+    footer {
+        margin-top: 2rem;
+        font-size: 0.7rem;
+        color: var(--ink-dim);
+        position: relative;
+        z-index: 1;
+    }
+</style>
+</head>
+<body>
+
+    <div class="topbar">
+        <span>SECRET DIARY</span>
+        <a href="index.html">保健室へ戻る</a>
+    </div>
+
+    <main class="diary" id="diary">
+
+        <!-- ここに日記エントリーを追加していく（枠のテンプレート） -->
+        <article class="entry is-example">
+            <div class="entry-date"><span class="cursor"></span>2026.07.18　23:41</div>
+            <h2 class="entry-title">眠れない夜に</h2>
+            <p class="entry-body">今日は保健室で少し話しただけなのに、なんだか気持ちが軽くなった気がする。
+誰にも言えないことばかりだけど、ここになら書いてもいいかな。
+明日はちゃんと朝ごはんを食べよう。</p>
+        </article>
+
+        <!-- 新しいエントリーを追加する場合は、上の <article class="entry"> ブロックを
+             コピーして is-example クラスを外し、日時・タイトル・本文を書き換えてください -->
+
+    </main>
+
+    <footer>誰にも見せていない、日記帳。</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script>
+        gsap.utils.toArray(".entry").forEach((el, i) => {
+            gsap.fromTo(el,
+                { opacity: 0, y: 16 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.6,
+                    delay: 0.15 * i,
+                    ease: "power2.out"
+                }
+            );
+        });
+    </script>
+</body>
+</html>

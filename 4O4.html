@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ページが見つかりません | インターネットほけんしつ</title>
+
+   <!-- Favicon -->
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ドットフォント（DotGothic16）と基本のゴシック体を読み込み。後でご自身のニトロDSフォントに差し替えてください -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+    <!-- アイコンライブラリ -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c7f0eb',
+                        primaryDark: '#a3dcd5',
+                        bgMain: '#ffffff',
+                        bgSub: '#f8fafc',
+                        textMain: '#334155',
+                        textSub: '#64748b',
+                        borderLight: '#e2e8f0',
+                    },
+                    fontFamily: {
+                        dot: ['"nitrods-font","DotGothic16"', 'sans-serif'],
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'paper-grid': "linear-gradient(#c7f0eb33 1px, transparent 1px), linear-gradient(90deg, #c7f0eb33 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ニトロDSフォントの読み込み */
+        @font-face {
+            font-family: 'nitrods-font';
+            src: url('nitrods-font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        /* 方眼紙背景 */
+        .bg-grid {
+            background-size: 20px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        ::selection {
+            background: #c7f0eb;
+            color: #1e293b;
+        }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7f0eb; }
+
+        .solid-panel {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px #c7f0eb;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .solid-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #c7f0eb;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* 十字マーク（ほけんしつのアイコン）用 */
+        .cross-icon {
+            position: relative;
+            width: 70px;
+            height: 70px;
+        }
+        .cross-icon::before, .cross-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #c7f0eb;
+            border: 3px solid #334155;
+            border-radius: 4px;
+        }
+        .cross-icon::before {
+            top: 20%; bottom: 20%; left: 40%; right: 40%;
+        }
+        .cross-icon::after {
+            left: 20%; right: 20%; top: 40%; bottom: 40%;
+        }
+
+        /* 大きな404の数字 */
+        .error-number {
+            font-family: "nitrods-font", "DotGothic16", sans-serif;
+            font-size: clamp(5rem, 22vw, 12rem);
+            line-height: 1;
+            color: #ffffff;
+            -webkit-text-stroke: 4px #334155;
+            paint-order: stroke fill;
+            letter-spacing: 0.05em;
+        }
+
+        /* ほけんしつのモニター風点滅カーソル */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.15; }
+        }
+        .blink-dot {
+            animation: blink 1.4s ease-in-out infinite;
+        }
+
+        #typewriter-text {
+            display: inline-block;
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            .solid-panel {
+                box-shadow: 4px 4px 0px #c7f0eb;
+                border-width: 2px;
+            }
+            .solid-panel:hover {
+                transform: translate(-1px, -1px);
+                box-shadow: 5px 5px 0px #c7f0eb;
+            }
+            .cross-icon {
+                width: 52px;
+                height: 52px;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <!-- 背景のグリッド -->
+    <div class="bg-grid bg-paper-grid"></div>
+
+    <!-- シンプルなヘッダー（トップへのリンクのみ） -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md border-b-2 border-primary/50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-xl md:text-2xl font-dot font-bold flex items-center gap-2 group">
+                <div class="w-6 h-6 relative group-hover:rotate-90 transition-transform duration-300">
+                    <div class="absolute inset-x-2 inset-y-0 bg-primary border-2 border-textMain rounded-sm"></div>
+                    <div class="absolute inset-y-2 inset-x-0 bg-primary border-2 border-textMain border-x-0"></div>
+                </div>
+                <span class="text-textMain">インターネットほけんしつ</span>
+            </a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="min-h-screen flex items-center justify-center relative overflow-hidden px-6 py-32">
+
+            <!-- 背景の装飾ドット模様 -->
+            <div class="absolute inset-0 z-0 opacity-40" style="background-image: radial-gradient(#c7f0eb 2px, transparent 2px); background-size: 28px 28px;"></div>
+
+            <div class="container mx-auto relative z-10 text-center max-w-2xl">
+
+                <!-- 十字アイコン -->
+                <div class="cross-icon mx-auto mb-6 reveal-hero animate-float"></div>
+
+                <!-- 404 -->
+                <h1 class="error-number reveal-title mb-2">404</h1>
+
+                <h2 class="text-2xl md:text-3xl font-dot font-bold text-textMain mb-6 reveal-hero-text opacity-0 translate-y-4">
+                    このページは、ほけんしつにありません
+                </h2>
+
+                <!-- タイプライター風メッセージ -->
+                <p class="font-dot text-sm md:text-base text-textSub mb-10 reveal-hero-text opacity-0 translate-y-4 min-h-[1.5em]">
+                    <span id="typewriter-text"></span><span class="blink-dot">_</span>
+                </p>
+
+                <!-- 説明パネル -->
+                <div class="solid-panel p-6 md:p-8 mb-10 text-left reveal-hero-text opacity-0 translate-y-4">
+                    <p class="text-textMain font-sans text-sm md:text-base leading-relaxed">
+                        お探しのページは移動または削除されたか、URLが間違っている可能性があります。<br>
+                        深呼吸して、下のボタンからトップページに戻ってみてください。
+                    </p>
+                </div>
+
+                <!-- トップへ戻るボタン -->
+                <a href="index.html" class="inline-block reveal-hero-text opacity-0 translate-y-4 group">
+                    <div class="relative bg-textMain text-white border-4 border-textMain px-8 py-4 rounded-2xl flex items-center justify-center gap-3 transition-transform transform group-hover:-translate-y-1 group-hover:bg-primary group-hover:text-textMain shadow-[6px_6px_0px_#c7f0eb] hover:shadow-[8px_8px_0px_#c7f0eb]">
+                        <i class="ph ph-house text-2xl"></i>
+                        <span class="font-bold font-dot text-lg tracking-widest">トップに戻る</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- フッター -->
+    <footer class="py-8 bg-textMain text-center font-dot text-sm text-white/70 relative z-10">
+        <div class="flex justify-center items-center gap-2 mb-2">
+            <div class="w-4 h-4 bg-primary rounded-full"></div>
+            <p>インターネットほけんしつ</p>
+        </div>
+        <p>&copy; 2026 Internet Hokenshitsu Administration.</p>
+    </footer>
+
+    <script>
+        // --- GSAP アニメーション設定 ---
+
+        const tl = gsap.timeline();
+
+        // タイプライター風メッセージ（TextPluginなしの自前実装）
+        const typewriterElement = document.getElementById("typewriter-text");
+        const messages = [
+            "ページを探しています...",
+            "見当たりませんでした...",
+            "落ち着いて、トップに戻りましょう。"
+        ];
+
+        function runTypewriter(el, msgs) {
+            let msgIndex = 0;
+
+            function typeNext() {
+                if (msgIndex >= msgs.length) return;
+                const msg = msgs[msgIndex];
+                let charIndex = 0;
+                el.textContent = "";
+
+                const interval = setInterval(() => {
+                    charIndex++;
+                    el.textContent = msg.slice(0, charIndex);
+                    if (charIndex >= msg.length) {
+                        clearInterval(interval);
+                        msgIndex++;
+                        setTimeout(typeNext, 700);
+                    }
+                }, 45);
+            }
+            typeNext();
+        }
+
+        runTypewriter(typewriterElement, messages);
+
+        // --- 隠し要素：「4」「0」「4」の順にキー入力すると unknown.html へ移動 ---
+        const secretCode = ["4", "0", "4"];
+        let secretProgress = 0;
+
+        window.addEventListener("keydown", (e) => {
+            const key = e.key;
+            if (key === secretCode[secretProgress]) {
+                secretProgress++;
+                if (secretProgress === secretCode.length) {
+                    secretProgress = 0;
+                    window.location.href = "unknown.html";
+                }
+            } else {
+                // 入力が途中で外れた場合、今のキーが最初の文字と一致するかも確認してリセット
+                secretProgress = (key === secretCode[0]) ? 1 : 0;
+            }
+        });
+
+        // アイコンの浮上
+        tl.from(".reveal-hero", {
+            duration: 1.2,
+            scale: 0,
+            opacity: 0,
+            rotation: 180,
+            ease: "back.out(1.5)"
+        })
+        // 404数字の出現
+        .from(".reveal-title", {
+            duration: 1,
+            y: 30,
+            opacity: 0,
+            ease: "power3.out"
+        }, "-=0.7")
+        // サブタイトル・本文・ボタンのフェードイン
+        .to(".reveal-hero-text", {
+            duration: 0.8,
+            opacity: 1,
+            y: 0,
+            ease: "power2.out",
+            stagger: 0.15
+        }, "-=0.4");
+    </script>
+</body>
+</html>

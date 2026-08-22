@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おしらせ | インターネットほけんしつ</title>
+
+     <!-- Favicon -->
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <!-- Tailwind Config（元サイトと共通のテーマ設定） -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c7f0eb',
+                        primaryDark: '#a3dcd5',
+                        bgMain: '#ffffff',
+                        bgSub: '#f8fafc',
+                        textMain: '#334155',
+                        textSub: '#64748b',
+                        borderLight: '#e2e8f0',
+                        newsEvent: '#c7f0eb',
+                        newsUpdate: '#ffe3b3',
+                        newsNotice: '#ffc9c9',
+                    },
+                    fontFamily: {
+                        dot: ['"nitrods-font","DotGothic16"', 'sans-serif'],
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'paper-grid': "linear-gradient(#c7f0eb33 1px, transparent 1px), linear-gradient(90deg, #c7f0eb33 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @font-face {
+            font-family: 'nitrods-font';
+            src: url('nitrods-font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #334155;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .bg-grid {
+            background-size: 20px 20px;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        ::selection { background: #c7f0eb; color: #1e293b; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7f0eb; }
+
+        .solid-panel {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px #c7f0eb;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .solid-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #c7f0eb;
+        }
+
+        .cross-icon {
+            position: relative;
+            width: 44px;
+            height: 44px;
+        }
+        .cross-icon::before, .cross-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #c7f0eb;
+            border: 3px solid #334155;
+            border-radius: 4px;
+        }
+        .cross-icon::before { top: 20%; bottom: 20%; left: 40%; right: 40%; }
+        .cross-icon::after { left: 20%; right: 20%; top: 40%; bottom: 40%; }
+
+        /* ==========================================
+           ニュース欄 専用スタイル
+           ========================================== */
+
+        /* カテゴリタブ */
+        .news-tab {
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            border: 2px solid #334155;
+            background: #ffffff;
+            color: #64748b;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .news-tab.active {
+            background: #334155;
+            color: #ffffff;
+            box-shadow: 3px 3px 0px #c7f0eb;
+        }
+        .news-tab:not(.active):hover {
+            background: #f8fafc;
+            border-color: #a3dcd5;
+            color: #334155;
+        }
+
+        /* ニュースカード（左に縦のタイムラインライン） */
+        .news-list {
+            position: relative;
+        }
+        .news-list::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            background: repeating-linear-gradient(
+                to bottom,
+                #c7f0eb 0px,
+                #c7f0eb 8px,
+                transparent 8px,
+                transparent 14px
+            );
+        }
+        @media (max-width: 640px) {
+            .news-list::before { left: 7px; }
+        }
+
+        .news-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid #334155;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            background: #ffffff;
+        }
+        @media (max-width: 640px) {
+            .news-dot { width: 16px; height: 16px; border-width: 2px; }
+        }
+
+        .news-card {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 10px;
+            box-shadow: 5px 5px 0px #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .news-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px #c7f0eb;
+        }
+
+        .news-badge {
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 2px solid #334155;
+            white-space: nowrap;
+        }
+        .badge-event { background: #c7f0eb; }
+        .badge-update { background: #ffe3b3; }
+        .badge-notice { background: #ffc9c9; }
+
+        .news-new-flag {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ff8fa3;
+            border: 2px solid #334155;
+            color: #ffffff;
+            font-family: '"nitrods-font","DotGothic16"', sans-serif;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            transform: rotate(8deg);
+            box-shadow: 2px 2px 0px #334155;
+        }
+
+        /* もっと見るボタン */
+        .load-more-btn {
+            border: 3px solid #334155;
+            background: #ffffff;
+            box-shadow: 4px 4px 0px #334155;
+            transition: all 0.2s ease;
+        }
+        .load-more-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px #334155;
+            background: #c7f0eb;
+        }
+        .load-more-btn:active {
+            transform: translate(0, 0);
+            box-shadow: 2px 2px 0px #334155;
+        }
+
+        .news-item.hidden-item { display: none; }
+
+        @media (max-width: 767px) {
+            .solid-panel { box-shadow: 4px 4px 0px #c7f0eb; border-width: 2px; }
+            .news-card { box-shadow: 3px 3px 0px #e2e8f0; }
+            section { padding-top: 3.5rem; padding-bottom: 3.5rem; }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <div class="bg-grid bg-paper-grid"></div>
+
+    <!-- シンプルヘッダー -->
+    <header class="w-full border-b-2 border-primary/50 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-lg md:text-2xl font-dot font-bold flex items-center gap-2 group">
+                <div class="w-6 h-6 relative group-hover:rotate-90 transition-transform duration-300">
+                    <div class="absolute inset-x-2 inset-y-0 bg-primary border-2 border-textMain rounded-sm"></div>
+                    <div class="absolute inset-y-2 inset-x-0 bg-primary border-2 border-textMain border-x-0"></div>
+                </div>
+                <span class="text-textMain">インターネットほけんしつ</span>
+            </a>
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-textMain rounded-full font-dot text-sm text-textMain hover:bg-primary transition-colors shadow-[2px_2px_0px_#334155] group">
+                <i class="ph ph-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
+                <span class="hidden sm:inline">ほけんしつに戻る</span>
+            </a>
+        </nav>
+    </header>
+
+    <main class="relative z-10">
+        <!-- ==========================================
+             HERO: ニュース欄タイトル
+             ========================================== -->
+        <section class="pt-16 pb-12 text-center relative overflow-hidden">
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="cross-icon mx-auto mb-6 reveal-hero"></div>
+                <div class="font-dot text-textSub mb-6 text-xs tracking-widest border-2 border-primary bg-white py-2 px-6 rounded-full inline-block shadow-sm reveal-hero-text opacity-0">
+                    <span id="typewriter-text"></span><span class="animate-pulse">_</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-dot font-bold text-textMain mb-4 reveal-title">
+                    おしらせ
+                </h1>
+                <p class="text-textSub font-sans max-w-xl mx-auto reveal-hero-text opacity-0">
+                    ほけんしつからの、ちいさなお知らせ集です。<br class="hidden md:block">
+                    イベントや更新情報など、ここでまとめてチェックできます。
+                </p>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             NEWS SECTION
+             ========================================== -->
+        <section class="pb-32">
+            <div class="container mx-auto px-6 max-w-3xl">
+
+                <!-- カテゴリフィルター -->
+                <div class="flex flex-wrap gap-3 justify-center mb-14 reveal-up">
+                    <button class="news-tab active px-5 py-2 rounded-full text-sm" data-filter="all">すべて</button>
+                    <button class="news-tab px-5 py-2 rounded-full text-sm" data-filter="event">
+                        <i class="ph ph-calendar-star mr-1"></i>イベント
+                    </button>
+                    <button class="news-tab px-5 py-2 rounded-full text-sm" data-filter="update">
+                        <i class="ph ph-sparkle mr-1"></i>更新情報
+                    </button>
+                    <button class="news-tab px-5 py-2 rounded-full text-sm" data-filter="notice">
+                        <i class="ph ph-megaphone mr-1"></i>おしらせ
+                    </button>
+                </div>
+
+                <!-- ニュースリスト -->
+                <div class="news-list flex flex-col gap-8" id="newsList">
+
+                    <!-- 記事1 -->
+                    <div class="news-item flex gap-4 sm:gap-6 reveal-card" data-category="event">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <span class="news-new-flag">NEW</span>
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-event">イベント</span>
+                                <time class="font-dot text-xs text-textSub">2026.07.02</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test A
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 1
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 記事2 -->
+                    <div class="news-item flex gap-4 sm:gap-6 reveal-card" data-category="update">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-update">更新情報</span>
+                                <time class="font-dot text-xs text-textSub">2026.06.24</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test B
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 2
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 記事3 -->
+                    <div class="news-item flex gap-4 sm:gap-6 reveal-card" data-category="notice">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-notice">おしらせ</span>
+                                <time class="font-dot text-xs text-textSub">2026.06.18</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test C
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 3
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 記事4 -->
+                    <div class="news-item flex gap-4 sm:gap-6 reveal-card" data-category="event">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-event">イベント</span>
+                                <time class="font-dot text-xs text-textSub">2026.06.10</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test D
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 4
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 記事5（初期は非表示・もっと見るで表示） -->
+                    <div class="news-item hidden-item flex gap-4 sm:gap-6 reveal-card" data-category="update">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-update">更新情報</span>
+                                <time class="font-dot text-xs text-textSub">2026.05.29</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test E
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 5
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 記事6（初期は非表示） -->
+                    <div class="news-item hidden-item flex gap-4 sm:gap-6 reveal-card" data-category="notice">
+                        <div class="news-dot mt-1"></div>
+                        <div class="news-card relative flex-1 p-5 sm:p-6">
+                            <div class="flex flex-wrap items-center gap-3 mb-3">
+                                <span class="news-badge badge-notice">おしらせ</span>
+                                <time class="font-dot text-xs text-textSub">2026.05.15</time>
+                            </div>
+                            <h3 class="text-lg sm:text-xl font-bold font-dot text-textMain mb-2">
+                                test F
+                            </h3>
+                            <p class="text-textSub font-sans text-sm leading-relaxed">
+                                test 6
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 該当なしメッセージ -->
+                <div id="emptyState" class="hidden text-center py-16 reveal-up">
+                    <i class="ph ph-tea-bag text-4xl text-textSub/40 mb-4"></i>
+                    <p class="font-dot text-textSub">このカテゴリのおしらせはまだありません</p>
+                </div>
+
+                <!-- もっと見るボタン -->
+                <div class="text-center mt-14 reveal-up">
+                    <button id="loadMoreBtn" class="load-more-btn font-dot text-sm text-textMain px-8 py-3 rounded-full inline-flex items-center gap-2">
+                        <span>もっと見る</span>
+                        <i class="ph ph-caret-down"></i>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- フッター -->
+        <footer class="py-8 bg-textMain text-center font-dot text-sm text-white/70 relative z-10">
+            <div class="flex justify-center items-center gap-2 mb-2">
+                <div class="w-4 h-4 bg-primary rounded-full"></div>
+                <p>インターネットほけんしつ</p>
+            </div>
+            <p>&copy; 2026 インターネットほけんしつ Administration.</p>
+        </footer>
+    </main>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- タイプライター風メッセージ ---
+        const typewriterElement = document.getElementById("typewriter-text");
+        const messages = ["最新のおしらせを取りに行っています..."];
+        if (window.TextPlugin) { gsap.registerPlugin(TextPlugin); }
+
+        const heroTl = gsap.timeline();
+        if (window.gsap && gsap.plugins && gsap.plugins.text) {
+            heroTl.to(typewriterElement, { text: messages[0], duration: 1.2, ease: "none" });
+        } else {
+            typewriterElement.textContent = messages[0];
+        }
+        heroTl
+            .from(".reveal-hero", { duration: 1.2, scale: 0, opacity: 0, rotation: 180, ease: "back.out(1.5)" }, "-=0.4")
+            .from(".reveal-title", { duration: 1, y: 30, opacity: 0, ease: "power3.out" }, "-=0.8")
+            .to(".reveal-hero-text", { duration: 0.8, opacity: 1, y: 0, ease: "power2.out", stagger: 0.15 }, "-=0.4");
+
+        // --- スクロール連動の出現アニメーション ---
+        gsap.utils.toArray('.reveal-up').forEach((elem) => {
+            gsap.from(elem, {
+                scrollTrigger: { trigger: elem, start: "top 85%", toggleActions: "play none none reverse" },
+                y: 30,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power3.out"
+            });
+        });
+
+        // 表示中のニュースカードにカスケードアニメーションを適用する関数
+        function animateVisibleCards() {
+            const visibleCards = document.querySelectorAll('.news-item:not(.hidden-item):not(.filtered-out)');
+            visibleCards.forEach((elem, i) => {
+                gsap.fromTo(elem,
+                    { y: 24, opacity: 0 },
+                    {
+                        y: 0,
+                        opacity: 1,
+                        duration: 0.6,
+                        delay: i * 0.06,
+                        ease: "back.out(1.2)",
+                        overwrite: "auto"
+                    }
+                );
+            });
+        }
+        // 初期表示分にアニメーション
+        window.addEventListener('load', animateVisibleCards);
+        // フォント読み込み等を待たず、念のため少し遅延しても実行
+        setTimeout(animateVisibleCards, 300);
+
+        // --- カテゴリフィルター ---
+        const tabs = document.querySelectorAll('.news-tab');
+        const newsItems = document.querySelectorAll('.news-item');
+        const emptyState = document.getElementById('emptyState');
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+        function applyFilter(filter) {
+            let visibleCount = 0;
+            newsItems.forEach(item => {
+                const matches = filter === 'all' || item.dataset.category === filter;
+                if (matches) {
+                    item.classList.remove('filtered-out');
+                    // フィルター時は「もっと見る」で隠れているものも含めて全部見せる
+                    item.classList.remove('hidden-item');
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.classList.add('filtered-out');
+                    item.style.display = 'none';
+                }
+            });
+            emptyState.classList.toggle('hidden', visibleCount > 0);
+            loadMoreBtn.style.display = filter === 'all' ? '' : 'none';
+            animateVisibleCards();
+        }
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                applyFilter(tab.dataset.filter);
+            });
+        });
+
+        // --- もっと見るボタン ---
+        loadMoreBtn.addEventListener('click', () => {
+            const hidden = document.querySelectorAll('.news-item.hidden-item');
+            hidden.forEach(item => item.classList.remove('hidden-item'));
+            animateVisibleCards();
+            loadMoreBtn.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

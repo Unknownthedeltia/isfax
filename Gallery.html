@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ギャラリー - インターネットほけんしつ</title>
+
+     <!-- Favicon -->
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: ドットフォントとゴシック体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons (アイコンライブラリ) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- GSAP (アニメーション用ライブラリ) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Tailwind Config: 元サイトのデザインシステムを継承 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#c7f0eb', 
+                        primaryDark: '#a3dcd5',
+                        bgMain: '#ffffff',
+                        bgSub: '#f8fafc',
+                        textMain: '#334155',
+                        textSub: '#64748b',
+                        borderLight: '#e2e8f0',
+                    },
+                    fontFamily: {
+                        dot: ['"nitrods-font", "DotGothic16"', 'sans-serif'],
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'paper-grid': "linear-gradient(#c7f0eb33 1px, transparent 1px), linear-gradient(90deg, #c7f0eb33 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ニトロDSフォントの読み込みフォールバック */
+        @font-face {
+            font-family: 'nitrods-font';
+            src: url('nitrods-font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #334155;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            /* モーダル開閉時のスクロール制御用クラス */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        /* 方眼紙背景 */
+        .bg-grid {
+            background-size: 20px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        ::selection {
+            background: #c7f0eb;
+            color: #1e293b;
+        }
+
+        /* スクロールバーのデザイン */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7f0eb; }
+        
+        /* レトロポップなカードパネル (共通パーツ) */
+        .solid-panel {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px #c7f0eb;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+
+        /* ギャラリーアイテム用ホバーエフェクト */
+        .gallery-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #c7f0eb;
+            cursor: pointer;
+        }
+        
+        /* 画像をホバーした際に少し明るく・拡大する演出 */
+        .gallery-item .img-wrapper img {
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+        .gallery-item:hover .img-wrapper img {
+            transform: scale(1.05);
+            filter: brightness(1.05);
+        }
+
+        /* ページネーションボタン用スタイル */
+        .page-btn {
+            background: #ffffff;
+            border: 2px solid #334155;
+            border-radius: 6px;
+            box-shadow: 3px 3px 0px #c7f0eb;
+            transition: all 0.1s ease-in-out;
+        }
+        .page-btn:hover:not(:disabled) {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #c7f0eb;
+            background: #f8fafc;
+        }
+        .page-btn:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #c7f0eb;
+        }
+        .page-btn.active {
+            background: #c7f0eb;
+            font-weight: bold;
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* ジャンル切り替えボタン */
+        .genre-btn {
+            background: #ffffff;
+            border: 2px solid #334155;
+            border-radius: 999px;
+            box-shadow: 3px 3px 0px #c7f0eb;
+            transition: all 0.15s ease-in-out;
+        }
+        .genre-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #c7f0eb;
+            background: #f8fafc;
+        }
+        .genre-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #c7f0eb;
+        }
+        .genre-btn.active {
+            background: #334155;
+            color: #ffffff;
+            box-shadow: 3px 3px 0px #a3dcd5;
+        }
+
+        /* 音楽アイテムのサムネイル装飾 */
+        .music-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #334155;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 2px 2px 0px #334155;
+        }
+
+        /* モーダルの背景すりガラス効果 */
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* スマホ向け調整 */
+        @media (max-width: 767px) {
+            .solid-panel {
+                box-shadow: 4px 4px 0px #c7f0eb;
+                border-width: 2px;
+            }
+            .gallery-item:hover {
+                transform: translate(-1px, -1px);
+                box-shadow: 5px 5px 0px #c7f0eb;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <!-- 背景のグリッド -->
+    <div class="bg-grid bg-paper-grid"></div>
+
+    <!-- シンプルな上部メニュー（戻るボタンのみ） -->
+    <header class="fixed top-0 left-0 w-full z-40 bg-white/80 backdrop-blur-md border-b-2 border-primary/50 shadow-sm">
+        <nav class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- 戻るボタン。遷移先は元のページ(index.html等)を想定 -->
+            <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-white border-2 border-textMain rounded-full font-dot text-sm text-textMain hover:bg-primary transition-colors shadow-[2px_2px_0px_#334155] group">
+                <i class="ph ph-arrow-left text-lg group-hover:-translate-x-1 transition-transform"></i>
+                <span>ほけんしつに戻る</span>
+            </a>
+            
+            <!-- 右側にさりげなくタイトルを配置 -->
+            <div class="text-textSub font-dot text-sm hidden sm:block">
+                <span>インターネットほけんしつ / ギャラリー</span>
+            </div>
+        </nav>
+    </header>
+
+    <main class="relative z-10 pt-28 pb-20 flex-grow container mx-auto px-6 max-w-6xl">
+        <!-- ページタイトル -->
+        <div class="mb-12 text-center">
+            <h1 class="text-4xl md:text-5xl font-dot font-bold text-textMain mb-2 flex items-center justify-center gap-3">
+                <i class="ph ph-images text-primaryDark"></i>
+                ギャラリー
+            </h1>
+            <p class="text-textSub font-sans text-sm mt-4 max-w-2xl mx-auto bg-white/60 p-3 rounded-lg border border-borderLight inline-block backdrop-blur-sm">
+                皆さんの作品を展示する空間です。画像をクリックすると詳細を見ることができます。
+            </p>
+
+            <!-- エントリーする（作品応募）ボタン ※リンク先は仮でsample.com -->
+            <div class="mt-6">
+                <a href="https://sample.com" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-primary border-2 border-textMain rounded-full font-dot text-sm text-textMain hover:bg-primaryDark transition-colors shadow-[3px_3px_0px_#334155] hover:shadow-[4px_4px_0px_#334155] hover:-translate-x-0.5 hover:-translate-y-0.5 active:shadow-[1px_1px_0px_#334155] active:translate-x-0.5 active:translate-y-0.5">
+                    <i class="ph ph-pencil-line text-lg"></i>
+                    <span>作品をエントリーする</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- ジャンル選択ボタン -->
+        <div id="genre-controls" class="mb-10 flex justify-center flex-wrap gap-3 font-dot text-sm">
+            <button class="genre-btn px-5 py-2 flex items-center gap-2" data-genre="illust" onclick="changeGenre('illust')">
+                <i class="ph ph-paint-brush"></i> 絵
+            </button>
+            <button class="genre-btn px-5 py-2 flex items-center gap-2" data-genre="background" onclick="changeGenre('background')">
+                <i class="ph ph-image"></i> 背景
+            </button>
+            <button class="genre-btn px-5 py-2 flex items-center gap-2" data-genre="music" onclick="changeGenre('music')">
+                <i class="ph ph-music-notes"></i> 音楽
+            </button>
+            <button class="genre-btn px-5 py-2 flex items-center gap-2" data-genre="cooking" onclick="changeGenre('cooking')">
+                <i class="ph ph-cooking-pot"></i> 料理
+            </button>
+            <button class="genre-btn px-5 py-2 flex items-center gap-2" data-genre="pet" onclick="changeGenre('pet')">
+                <i class="ph ph-paw-print"></i> ペット
+            </button>
+        </div>
+
+
+        <!-- ギャラリーコンテナ：JSでアイテムを動的に生成します -->
+        <!-- 1ページ12枚、正方形表示。Grid Layoutを用いてレスポンシブに対応 -->
+        <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 min-h-[50vh]">
+            <!-- 画像アイテムはJSで挿入されます -->
+        </div>
+
+        <!-- ページネーションコントロール -->
+        <div id="pagination-controls" class="mt-16 flex justify-center items-center gap-2 font-dot">
+            <!-- ページネーションボタンはJSで挿入されます -->
+        </div>
+    </main>
+
+    <!-- フッター (シンプル版) -->
+    <footer class="py-6 mt-auto bg-textMain text-center font-dot text-xs text-white/70 relative z-10">
+        <p>&copy; 2026 Internet Hokenshitsu Administration.</p>
+    </footer>
+
+    <!-- ==========================================
+         詳細表示用モーダルウィンドウ
+         ========================================== -->
+    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <!-- 背景のすりガラス領域（クリックで閉じる） -->
+        <div class="absolute inset-0 modal-backdrop" onclick="closeModal()"></div>
+        
+        <!-- モーダルコンテンツ本体 -->
+        <div class="relative w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col pointer-events-auto transform scale-95 transition-transform duration-300" id="modal-content-wrapper">
+            
+            <!-- 閉じるボタン（右上外側） -->
+            <button onclick="closeModal()" class="absolute -top-12 right-0 w-10 h-10 bg-white border-2 border-textMain rounded-full flex items-center justify-center text-textMain hover:bg-primary transition-colors shadow-[2px_2px_0px_#334155] z-10" aria-label="閉じる">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+
+            <!-- パネルデザイン -->
+            <div class="solid-panel flex flex-col md:flex-row overflow-hidden max-h-[calc(90vh-3rem)]">
+                <!-- 左側/上部：画像エリア -->
+                <div class="w-full md:w-3/5 bg-bgSub flex flex-col items-center justify-center relative overflow-hidden group">
+                    <!-- アスペクト比を保ちつつ、枠内に収める(contain) -->
+                    <img id="modal-image" src="" alt="作品" class="w-full h-full max-h-[50vh] md:max-h-full object-contain p-2">
+                    <!-- 音楽ジャンルの場合のみ表示されるオーディオプレイヤー -->
+                    <audio id="modal-audio" controls class="hidden w-full max-w-sm mb-4"></audio>
+                </div>
+                
+                <!-- 右側/下部：作品情報エリア -->
+                <div class="w-full md:w-2/5 p-6 md:p-8 flex flex-col bg-white overflow-y-auto border-t-2 md:border-t-0 md:border-l-2 border-textMain/10">
+                    <div class="mb-4">
+                        <span id="modal-date" class="font-dot text-xs text-textSub bg-bgSub px-2 py-1 rounded border border-borderLight inline-block mb-2"></span>
+                        <h2 id="modal-title" class="text-2xl font-bold font-dot text-textMain mb-1">作品タイトル</h2>
+                        <div class="flex items-center gap-2 text-primaryDark font-dot text-sm">
+                            <i class="ph ph-user-circle"></i>
+                            <span id="modal-author">作者名</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full h-px bg-borderLight my-4"></div>
+                    
+                    <div class="flex-grow">
+                        <h3 class="font-dot text-sm text-textSub mb-2 flex items-center gap-1">
+                            <i class="ph ph-text-align-left"></i> Description
+                        </h3>
+                        <!-- 説明文は改行を反映させるため whitespace-pre-wrap を指定 -->
+                        <p id="modal-description" class="font-sans text-sm text-textMain leading-relaxed whitespace-pre-wrap"></p>
+                    </div>
+
+                    <!-- モーダル内のアクションボタン（おまけ機能のモックアップ） -->
+                    <div class="mt-8 flex gap-3">
+                        <button id="like-btn" onclick="toggleLike()" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-bgSub border-2 border-borderLight text-textSub rounded hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors font-dot text-sm">
+                            <i id="like-icon" class="ph ph-heart"></i>
+                            <span id="like-label">すてき！</span>
+                            <span id="like-count" class="text-xs text-textSub"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ===================================================================
+         * ギャラリーデータと状態管理
+         * ===================================================================
+         * 実際の運用では、この配列のデータをサーバーやAPIから取得して差し替えます。
+         * 今回は要件に従い、「1ページ分のサンプルデータ（12件）」を初期設定しています。
+         * 13件目以降を追加すれば、自動的に2ページ目が作成されます。
+         */
+        const ITEMS_PER_PAGE = 12;
+        let currentPage = 1;
+
+        // 現在選択中のジャンル（"illust" | "background" | "music"）
+        let currentGenre = 'illust';
+
+        // 現在モーダルで表示中の作品ID（「すてき！」ボタンの対象を判定するために使用）
+        let currentModalId = null;
+
+        // 「すてき！」の記録用（ブラウザのlocalStorageに保存 = ローカルに記録が残る）
+        const LIKES_KEY = 'hoken_gallery_likes';
+
+        // 押した作品IDの一覧を取得（{ "1": true, "3": true, ... } の形で保存）
+        function getLikedMap() {
+            try {
+                return JSON.parse(localStorage.getItem(LIKES_KEY)) || {};
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function saveLikedMap(map) {
+            localStorage.setItem(LIKES_KEY, JSON.stringify(map));
+        }
+
+        function isLiked(id) {
+            return !!getLikedMap()[id];
+        }
+
+        // ギャラリーデータ（手動管理）
+        // ここに作品を1件ずつ追加してください。
+        // imageUrl は「Gallery」フォルダ内の画像ファイル名を指定します（例: "Gallery/1.png"）。
+        // 画像は index.html（このファイル）と同じ階層に「Gallery」フォルダを作り、その中に入れてください。
+        // category: "illust"（絵）, "background"（背景）, "music"（音楽）のいずれかを指定してください。
+        // 音楽ジャンルのアイテムは imageUrl にジャケット画像、audioUrl に音源ファイルを指定します。
+        const galleryData = [
+            {
+                id: 1,
+                title: "ほけんしつの記録 No.001",
+                author: "Aさん",
+                date: "2026.06.01",
+                description: "ここに作品の説明文が入ります。作品への思い入れや、描いたときの状況などを記述するスペースです。\n\nドットフォントではなくゴシック体を採用しているため、長文でも読みやすくなっています。",
+                imageUrl: "Gallery/1.png",
+                category: "illust"
+            },
+            {
+                id: 2,
+                title: "ほけんしつの記録 No.002",
+                author: "Bさん",
+                date: "2026.06.02",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/2.png",
+                category: "illust"
+            },
+            {
+                id: 3,
+                title: "ほけんしつの記録 No.003",
+                author: "Cさん",
+                date: "2026.06.03",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/3.png",
+                category: "illust"
+            },
+            {
+                id: 4,
+                title: "ほけんしつの記録 No.004",
+                author: "Dさん",
+                date: "2026.06.04",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/4.png",
+                category: "illust"
+            },
+            {
+                id: 5,
+                title: "ほけんしつの記録 No.005",
+                author: "名無しさん",
+                date: "2026.06.05",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/5.png",
+                category: "illust"
+            },
+            {
+                id: 6,
+                title: "ほけんしつの記録 No.006",
+                author: "Aさん",
+                date: "2026.06.06",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/6.png",
+                category: "illust"
+            },
+            {
+                id: 7,
+                title: "ほけんしつの記録 No.007",
+                author: "Bさん",
+                date: "2026.06.07",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/7.png",
+                category: "background"
+            },
+            {
+                id: 8,
+                title: "ほけんしつの記録 No.008",
+                author: "Cさん",
+                date: "2026.06.08",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/8.png",
+                category: "background"
+            },
+            {
+                id: 9,
+                title: "ほけんしつの記録 No.009",
+                author: "Dさん",
+                date: "2026.06.09",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/9.png",
+                category: "background"
+            },
+            {
+                id: 10,
+                title: "ほけんしつの記録 No.010",
+                author: "名無しさん",
+                date: "2026.06.10",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/10.png",
+                category: "background"
+            },
+            {
+                id: 11,
+                title: "ほけんしつの記録 No.011",
+                author: "Aさん",
+                date: "2026.06.11",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/11.png",
+                category: "background"
+            },
+            {
+                id: 12,
+                title: "ほけんしつの記録 No.012",
+                author: "Bさん",
+                date: "2026.06.12",
+                description: "ここに作品の説明文を書いてください。",
+                imageUrl: "Gallery/12.png",
+                category: "background"
+            },
+            {
+                id: 13,
+                title: "ほけんしつのうた No.001",
+                author: "Aさん",
+                date: "2026.06.13",
+                description: "ここに楽曲の説明文を書いてください。ジャケット画像は imageUrl、音源は audioUrl で指定します。",
+                imageUrl: "Gallery/music1.png",
+                audioUrl: "Gallery/music1.mp3",
+                category: "music"
+            },
+            {
+                id: 14,
+                title: "ほけんしつのうた No.002",
+                author: "Bさん",
+                date: "2026.06.14",
+                description: "ここに楽曲の説明文を書いてください。",
+                imageUrl: "Gallery/music2.png",
+                audioUrl: "Gallery/music2.mp3",
+                category: "music"
+            },
+            {
+                id: 15,
+                title: "ほけんしつのうた No.003",
+                author: "Cさん",
+                date: "2026.06.15",
+                description: "ここに楽曲の説明文を書いてください。",
+                imageUrl: "Gallery/music3.png",
+                audioUrl: "Gallery/music3.mp3",
+                category: "music"
+            },
+            {
+                id: 16,
+                title: "ほけんしつの晩ごはん No.001",
+                author: "Aさん",
+                date: "2026.06.16",
+                description: "ここに料理の説明文を書いてください。",
+                imageUrl: "Gallery/cooking1.png",
+                category: "cooking"
+            },
+            {
+                id: 17,
+                title: "ほけんしつの晩ごはん No.002",
+                author: "Bさん",
+                date: "2026.06.17",
+                description: "ここに料理の説明文を書いてください。",
+                imageUrl: "Gallery/cooking2.png",
+                category: "cooking"
+            },
+            {
+                id: 18,
+                title: "うちの子 No.001",
+                author: "Cさん",
+                date: "2026.06.18",
+                description: "ここにペットの説明文を書いてください。",
+                imageUrl: "Gallery/pet1.png",
+                category: "pet"
+            },
+            {
+                id: 19,
+                title: "うちの子 No.002",
+                author: "Dさん",
+                date: "2026.06.19",
+                description: "ここにペットの説明文を書いてください。",
+                imageUrl: "Gallery/pet2.png",
+                category: "pet"
+            }
+        ];
+
+        /**
+         * ===================================================================
+         * DOM要素の取得
+         * ===================================================================
+         */
+        const galleryGrid = document.getElementById('gallery-grid');
+        const paginationControls = document.getElementById('pagination-controls');
+        
+        // モーダル関連要素
+        const modal = document.getElementById('detail-modal');
+        const modalContentWrapper = document.getElementById('modal-content-wrapper');
+        const modalImage = document.getElementById('modal-image');
+        const modalAudio = document.getElementById('modal-audio');
+        const genreControls = document.getElementById('genre-controls');
+        const modalTitle = document.getElementById('modal-title');
+        const modalAuthor = document.getElementById('modal-author');
+        const modalDate = document.getElementById('modal-date');
+        const modalDescription = document.getElementById('modal-description');
+
+        /**
+         * ===================================================================
+         * レンダリング関数
+         * ===================================================================
+         */
+
+        // 現在選択中のジャンルでデータを絞り込む
+        function getFilteredData() {
+            return galleryData.filter(item => item.category === currentGenre);
+        }
+
+        // 指定されたページのギャラリーアイテムを描画する
+        function renderGallery(page) {
+            const filteredData = getFilteredData();
+
+            // データをページごとに切り出す
+            const startIndex = (page - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            // グリッドを一旦空にする
+            galleryGrid.innerHTML = '';
+
+            if (pageData.length === 0) {
+                galleryGrid.innerHTML = '<div class="col-span-full text-center py-20 font-dot text-textSub">作品がありません。</div>';
+                return;
+            }
+
+            // アイテムを生成して追加
+            pageData.forEach((item, index) => {
+                // 正方形を維持するために aspect-square を使用
+                const itemHTML = `
+                    <div class="solid-panel gallery-item flex flex-col opacity-0 transform translate-y-4" 
+                         onclick="openModal(${item.id})" 
+                         data-id="${item.id}">
+                        <!-- 画像部分 (アスペクト比1:1) -->
+                        <div class="img-wrapper w-full aspect-square overflow-hidden rounded-t-[5px] border-b-2 border-textMain/10 bg-bgSub relative">
+                            <!-- ローディング中のプレースホルダー色 -->
+                            <div class="absolute inset-0 bg-borderLight animate-pulse -z-10"></div>
+                            <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-full object-cover" loading="lazy">
+                            ${item.category === 'music' ? '<div class="music-badge"><i class="ph-fill ph-music-notes text-textMain text-sm"></i></div>' : ''}
+                            ${isLiked(item.id) ? '<div class="absolute top-2 right-2 w-7 h-7 bg-white/90 border-2 border-textMain rounded-full flex items-center justify-center text-red-500 shadow-[2px_2px_0px_#334155]"><i class="ph-fill ph-heart"></i></div>' : ''}
+                        </div>
+                        <!-- テキスト情報部分 -->
+                        <div class="p-3 bg-white rounded-b-[5px] flex-grow flex flex-col justify-between">
+                            <h3 class="font-dot font-bold text-textMain text-sm truncate mb-1" title="${item.title}">${item.title}</h3>
+                            <div class="flex justify-between items-center text-xs text-textSub font-sans">
+                                <span class="truncate pr-2">${item.author}</span>
+                                <span class="font-dot flex-shrink-0">${item.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                galleryGrid.insertAdjacentHTML('beforeend', itemHTML);
+            });
+
+            // GSAPによる順番に出現するアニメーション
+            gsap.to('.gallery-item', {
+                opacity: 1,
+                y: 0,
+                duration: 0.5,
+                stagger: 0.05, // 0.05秒間隔で次々に出現
+                ease: "back.out(1.5)"
+            });
+        }
+
+        // ページネーションコントロールを描画する
+        function renderPagination() {
+            const totalPages = Math.ceil(getFilteredData().length / ITEMS_PER_PAGE);
+            paginationControls.innerHTML = '';
+
+            // 1ページしかない場合でも、UIとして1ページ目を表示しておく（デザイン要件のため）
+            // または、totalPages <= 1 の場合は何も表示しないことも可能です。今回はUI確認のため表示します。
+
+            // 「前へ」ボタン
+            const prevDisabled = currentPage === 1 ? 'disabled' : '';
+            paginationControls.insertAdjacentHTML('beforeend', `
+                <button class="page-btn w-10 h-10 flex items-center justify-center text-textMain" 
+                        onclick="changePage(${currentPage - 1})" ${prevDisabled} aria-label="前のページ">
+                    <i class="ph ph-caret-left"></i>
+                </button>
+            `);
+
+            // ページ番号ボタン
+            for (let i = 1; i <= totalPages; i++) {
+                // 現在のページ付近のみ表示するなどの複雑な処理も可能ですが、
+                // 今回はシンプルな全ページ表示とします。
+                const activeClass = i === currentPage ? 'active' : '';
+                paginationControls.insertAdjacentHTML('beforeend', `
+                    <button class="page-btn w-10 h-10 flex items-center justify-center text-textMain ${activeClass}" 
+                            onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `);
+            }
+
+            // 「次へ」ボタン
+            const nextDisabled = currentPage === totalPages || totalPages === 0 ? 'disabled' : '';
+            paginationControls.insertAdjacentHTML('beforeend', `
+                <button class="page-btn w-10 h-10 flex items-center justify-center text-textMain" 
+                        onclick="changePage(${currentPage + 1})" ${nextDisabled} aria-label="次のページ">
+                    <i class="ph ph-caret-right"></i>
+                </button>
+            `);
+        }
+
+        // ジャンルボタンの見た目を、現在選択中のジャンルに合わせて更新する
+        function updateGenreButtons() {
+            const buttons = genreControls.querySelectorAll('.genre-btn');
+            buttons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.genre === currentGenre);
+            });
+        }
+
+        // ジャンル切り替え処理
+        function changeGenre(genre) {
+            if (genre === currentGenre) return;
+
+            currentGenre = genre;
+            currentPage = 1;
+
+            updateGenreButtons();
+            renderGallery(currentPage);
+            renderPagination();
+
+            // 上にスクロールして見やすくする
+            window.scrollTo({
+                top: document.getElementById('genre-controls').offsetTop - 120,
+                behavior: 'smooth'
+            });
+        }
+
+        // ページ切り替え処理
+        function changePage(newPage) {
+            const totalPages = Math.ceil(getFilteredData().length / ITEMS_PER_PAGE);
+            if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+
+            currentPage = newPage;
+            
+            // 少し上にスクロールして視線をリセット（スムーズスクロール）
+            window.scrollTo({
+                top: document.getElementById('gallery-grid').offsetTop - 120,
+                behavior: 'smooth'
+            });
+
+            // 少し遅らせてから再描画（スクロール中に書き換わるとガタつくため）
+            setTimeout(() => {
+                renderGallery(currentPage);
+                renderPagination();
+            }, 200);
+        }
+
+        /**
+         * ===================================================================
+         * モーダル（詳細表示）制御関数
+         * ===================================================================
+         */
+
+        function openModal(id) {
+            // IDから該当するデータを検索
+            const item = galleryData.find(d => d.id === id);
+            if (!item) return;
+
+            // モーダル内にデータをセット
+            // (一度プレースホルダー的に空にしたり、ローディング表示を入れるとより親切です)
+            modalImage.src = item.imageUrl;
+            modalImage.alt = item.title;
+            modalTitle.textContent = item.title;
+            modalAuthor.textContent = item.author;
+            modalDate.textContent = item.date;
+            modalDescription.textContent = item.description;
+
+            // 音楽ジャンルの場合のみ、オーディオプレイヤーを表示する
+            if (item.category === 'music' && item.audioUrl) {
+                modalAudio.src = item.audioUrl;
+                modalAudio.classList.remove('hidden');
+            } else {
+                modalAudio.pause();
+                modalAudio.removeAttribute('src');
+                modalAudio.classList.add('hidden');
+            }
+
+            // 「すてき！」ボタンの対象IDを更新し、押下状態を反映
+            currentModalId = item.id;
+            updateLikeButton();
+
+            // スクロールをロック
+            document.body.classList.add('modal-open');
+
+            // モーダルを表示
+            modal.classList.remove('pointer-events-none');
+            // GSAPでフェードイン＆スケールアップの演出
+            gsap.to(modal, { opacity: 1, duration: 0.3 });
+            gsap.to(modalContentWrapper, { scale: 1, duration: 0.4, ease: "back.out(1.2)" });
+        }
+
+        function closeModal() {
+            // スクロールロックを解除
+            document.body.classList.remove('modal-open');
+
+            // GSAPでフェードアウト＆スケールダウンの演出
+            gsap.to(modal, { opacity: 0, duration: 0.3 });
+            gsap.to(modalContentWrapper, { scale: 0.95, duration: 0.3, ease: "power2.in" });
+
+            // アニメーション完了後に非インタラクティブ化
+            setTimeout(() => {
+                modal.classList.add('pointer-events-none');
+                // 次開くときのために画像ソースをリセットしておく（残像防止）
+                modalImage.src = ''; 
+                // 音楽の再生も停止・リセットしておく
+                modalAudio.pause();
+                modalAudio.removeAttribute('src');
+                modalAudio.classList.add('hidden');
+            }, 300);
+        }
+
+        // 「すてき！」ボタンの見た目を、現在の押下状態に合わせて更新する
+        function updateLikeButton() {
+            const btn = document.getElementById('like-btn');
+            const icon = document.getElementById('like-icon');
+            const label = document.getElementById('like-label');
+            if (!btn || currentModalId === null) return;
+
+            if (isLiked(currentModalId)) {
+                btn.classList.add('bg-red-50', 'text-red-500', 'border-red-200');
+                btn.classList.remove('bg-bgSub', 'text-textSub', 'border-borderLight');
+                icon.classList.remove('ph-heart');
+                icon.classList.add('ph-heart-fill');
+                label.textContent = 'すてき！済み';
+            } else {
+                btn.classList.remove('bg-red-50', 'text-red-500', 'border-red-200');
+                btn.classList.add('bg-bgSub', 'text-textSub', 'border-borderLight');
+                icon.classList.remove('ph-heart-fill');
+                icon.classList.add('ph-heart');
+                label.textContent = 'すてき！';
+            }
+        }
+
+        // 「すてき！」ボタンが押されたときの処理
+        // クリックのたびにON/OFFを切り替え、localStorageに記録する
+        function toggleLike() {
+            if (currentModalId === null) return;
+
+            const map = getLikedMap();
+            const key = String(currentModalId);
+
+            if (map[key]) {
+                delete map[key];
+            } else {
+                map[key] = true;
+                // ハートがふわっと弾む演出
+                gsap.fromTo('#like-btn', { scale: 1 }, { scale: 1.08, duration: 0.15, yoyo: true, repeat: 1, ease: 'power1.inOut' });
+            }
+
+            saveLikedMap(map);
+            updateLikeButton();
+
+            // 現在表示中のギャラリー一覧にも即座に反映
+            renderGallery(currentPage);
+        }
+
+        // Escキーでもモーダルを閉じられるようにする（アクセシビリティ向上）
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('pointer-events-none')) {
+                closeModal();
+            }
+        });
+
+        /**
+         * ===================================================================
+         * 初期化処理
+         * ===================================================================
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGenreButtons();
+            renderGallery(currentPage);
+            renderPagination();
+        });
+
+    </script>
+</body>
+</html>
