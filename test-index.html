@@ -22,6 +22,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
 
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -434,9 +437,236 @@
             30% { transform: translateY(-6px) scale(1.15); }
             60% { transform: translateY(2px) scale(0.95); }
         }
+
+        /* ==========================================\n           Anime.js 用アニメーションスタイル\n           ========================================== */
+
+        /* 弾むドット（stagger 弾道アニメーション） */
+        .bouncing-dot {
+            position: absolute;
+            border-radius: 50%;
+            background: #c7f0eb;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* 十字アイコンの回転アニメーション用 */
+        .spinning-cross {
+            display: inline-block;
+        }
+
+        /* グリッド背景のパルス用 */
+        .grid-pulse {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            background-size: 20px 20px;
+            background-image: linear-gradient(#c7f0eb33 1px, transparent 1px), 
+                              linear-gradient(90deg, #c7f0eb33 1px, transparent 1px);
+        }
+
+        /* カードの輪郭光アニメーション */
+        .glow-border {
+            position: relative;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 10px;
+            background: linear-gradient(45deg, #c7f0eb, #a3dcd5, #c7f0eb);
+            z-index: -1;
+            opacity: 0;
+        }
+
+        /* 浮遊する医療アイテムアイコン */
+        .floating-medical-icon {
+            display: inline-block;
+            color: #c7f0eb;
+        }
+
+        /* タイプライターテキスト用カーソル */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink-cursor 0.8s step-end infinite;
+        }
+        @keyframes blink-cursor {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* 波紋エフェクト */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(199, 240, 235, 0.6);
+            transform: scale(0);
+            pointer-events: none;
+        }
+
+        /* 星座ライン（点と線を結ぶ演出） */
+        .constellation-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #c7f0eb;
+            border-radius: 50%;
+            border: 2px solid #334155;
+        }
+        .constellation-line {
+            position: absolute;
+            height: 2px;
+            background: #a3dcd5;
+            transform-origin: left center;
+        }
+
+        /* ローディングスピナー */
+        .loader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #c7f0eb;
+            border-radius: 50%;
+        }
+
+        /* メニューアイテムのスライドイン */
+        .menu-item {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        /* ヘッダーロゴのグリッチ効果 */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #a3dcd5;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: 2px 0 #c7f0eb;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(31px, 9999px, 94px, 0); }
+            5% { clip: rect(70px, 9999px, 7px, 0); }
+            10% { clip: rect(20px, 9999px, 89px, 0); }
+            15% { clip: rect(5px, 9999px, 61px, 0); }
+            20% { clip: rect(85px, 9999px, 14px, 0); }
+            25% { clip: rect(39px, 9999px, 2px, 0); }
+            30% { clip: rect(58px, 9999px, 37px, 0); }
+            35% { clip: rect(92px, 9999px, 78px, 0); }
+            40% { clip: rect(13px, 9999px, 4px, 0); }
+            45% { clip: rect(76px, 9999px, 59px, 0); }
+            50% { clip: rect(2px, 9999px, 91px, 0); }
+            55% { clip: rect(43px, 9999px, 18px, 0); }
+            60% { clip: rect(65px, 9999px, 32px, 0); }
+            65% { clip: rect(19px, 9999px, 84px, 0); }
+            70% { clip: rect(88px, 9999px, 6px, 0); }
+            75% { clip: rect(34px, 9999px, 47px, 0); }
+            80% { clip: rect(52px, 9999px, 23px, 0); }
+            85% { clip: rect(9px, 9999px, 72px, 0); }
+            90% { clip: rect(67px, 9999px, 11px, 0); }
+            95% { clip: rect(25px, 9999px, 96px, 0); }
+            100% { clip: rect(81px, 9999px, 38px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            5% { clip: rect(5px, 9999px, 84px, 0); }
+            10% { clip: rect(91px, 9999px, 15px, 0); }
+            15% { clip: rect(28px, 9999px, 53px, 0); }
+            20% { clip: rect(73px, 9999px, 8px, 0); }
+            25% { clip: rect(16px, 9999px, 67px, 0); }
+            30% { clip: rect(54px, 9999px, 31px, 0); }
+            35% { clip: rect(9px, 9999px, 95px, 0); }
+            40% { clip: rect(82px, 9999px, 46px, 0); }
+            45% { clip: rect(37px, 9999px, 79px, 0); }
+            50% { clip: rect(68px, 9999px, 3px, 0); }
+            55% { clip: rect(21px, 9999px, 58px, 0); }
+            60% { clip: rect(94px, 9999px, 12px, 0); }
+            65% { clip: rect(47px, 9999px, 86px, 0); }
+            70% { clip: rect(6px, 9999px, 39px, 0); }
+            75% { clip: rect(75px, 9999px, 24px, 0); }
+            80% { clip: rect(18px, 9999px, 71px, 0); }
+            85% { clip: rect(59px, 9999px, 5px, 0); }
+            90% { clip: rect(87px, 9999px, 48px, 0); }
+            95% { clip: rect(32px, 9999px, 93px, 0); }
+            100% { clip: rect(64px, 9999px, 17px, 0); }
+        }
+
+        /* ページロード時のフェードインオーバーレイ */
+        #pageLoader {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* ハートビートアニメーション（保健室のテーマに合う） */
+        .heartbeat {
+            display: inline-block;
+            animation: heartbeat-kf 1.2s ease-in-out infinite;
+        }
+        @keyframes heartbeat-kf {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.25); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+
+        /* シャッター開閉エフェクト */
+        .shutter {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #c7f0eb;
+            z-index: 9998;
+            transform: scaleY(0);
+            transform-origin: bottom;
+        }
+        .shutter.open {
+            transform: scaleY(0);
+            transform-origin: top;
+        }
+        .shutter.closed {
+            transform: scaleY(1);
+        }
     </style>
 </head>
 <body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <!-- ページローダー -->
+    <div id="pageLoader">
+        <div class="loader-spinner"></div>
+        <p class="font-dot text-textSub">Loading...</p>
+    </div>
+
+    <!-- シャッターエフェクト用 -->
+    <div class="shutter" id="topShutter"></div>
 
     <!-- スクロール進捗バー -->
     <div id="scrollProgress"></div>
@@ -518,6 +748,22 @@
             <div class="float-dot parallax-dot" data-speed="0.4" style="width:10px;height:10px; top:70%; right:20%;"></div>
             <div class="float-dot parallax-dot" data-speed="0.25" style="width:14px;height:14px; top:45%; left:6%;"></div>
 
+            <!-- Anime.js 用の弾むドットコンテナ -->
+            <div id="bouncingDotsContainer" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+            <!-- 星座ライン用コンテナ -->
+            <div id="constellationContainer" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+            <!-- 浮遊する医療アイコン -->
+            <div class="floating-medical-icon absolute top-20 left-1/4 text-4xl opacity-30" data-float-icon="plus">
+                <i class="ph ph-plus"></i>
+            </div>
+            <div class="floating-medical-icon absolute bottom-32 right-1/4 text-3xl opacity-30" data-float-icon="heart">
+                <i class="ph ph-heart"></i>
+            </div>
+            <div class="floating-medical-icon absolute top-1/3 right-1/3 text-2xl opacity-25" data-float-icon="pill">
+                <i class="ph ph-pill"></i>
+            </div>
             <div class="z-10 text-center px-4 relative w-full max-w-4xl mx-auto flex flex-col items-center">
                 
                 <!-- レトロなステータスメッセージ -->
@@ -1095,6 +1341,289 @@
                   });
             }
         })();
+
+        // ==========================================
+        // Anime.js による追加アニメーション
+        // ==========================================
+
+        // 1. ページローダーアニメーション
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('pageLoader');
+            const spinner = document.querySelector('.loader-spinner');
+
+            // スピナー回転
+            anime({
+                targets: spinner,
+                rotate: '1turn',
+                duration: 1000,
+                easing: 'linear',
+                loop: true
+            });
+
+            // ローダーフェードアウト
+            setTimeout(() => {
+                anime({
+                    targets: loader,
+                    opacity: 0,
+                    duration: 500,
+                    easing: 'easeInOutQuad',
+                    complete: () => {
+                        loader.style.display = 'none';
+                        // シャッターエフェクト
+                        openShutter();
+                    }
+                });
+            }, 1200);
+        });
+
+        function openShutter() {
+            const shutter = document.getElementById('topShutter');
+            anime({
+                targets: shutter,
+                scaleY: [1, 0],
+                transformOrigin: 'top',
+                duration: 800,
+                easing: 'easeInOutQuart'
+            });
+        }
+
+        // 2. 弾むドットアニメーション（stagger）
+        const bouncingContainer = document.getElementById('bouncingDotsContainer');
+        if (bouncingContainer) {
+            for (let i = 0; i < 30; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'bouncing-dot';
+                const size = Math.random() * 16 + 4;
+                dot.style.width = `${size}px`;
+                dot.style.height = `${size}px`;
+                dot.style.left = `${Math.random() * 100}%`;
+                dot.style.top = `${Math.random() * 100}%`;
+                dot.style.setProperty('--delay', `${Math.random() * 2}s`);
+                bouncingContainer.appendChild(dot);
+            }
+
+            anime({
+                targets: '.bouncing-dot',
+                translateY: () => anime.random(-100, 100),
+                translateX: () => anime.random(-50, 50),
+                scale: () => anime.random(0.5, 1.5),
+                opacity: () => anime.random(0.2, 0.8),
+                duration: () => anime.random(2000, 4000),
+                delay: anime.stagger(100, {grid: [5, 6], from: 'center'}),
+                easing: 'easeInOutQuad',
+                loop: true,
+                direction: 'alternate'
+            });
+        }
+
+        // 3. 星座ラインアニメーション
+        const constellationContainer = document.getElementById('constellationContainer');
+        if (constellationContainer) {
+            // ランダムに点を配置
+            const dots = [];
+            for (let i = 0; i < 12; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'constellation-dot';
+                dot.style.left = `${20 + Math.random() * 60}%`;
+                dot.style.top = `${20 + Math.random() * 60}%`;
+                constellationContainer.appendChild(dot);
+                dots.push({
+                    el: dot,
+                    x: parseFloat(dot.style.left),
+                    y: parseFloat(dot.style.top)
+                });
+            }
+
+            // 点を結ぶ線を描画
+            for (let i = 0; i < dots.length - 1; i++) {
+                const line = document.createElement('div');
+                line.className = 'constellation-line';
+                const dx = dots[i+1].x - dots[i].x;
+                const dy = dots[i+1].y - dots[i].y;
+                const length = Math.sqrt(dx*dx + dy*dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                line.style.width = `${length}%`;
+                line.style.left = `${dots[i].x}%`;
+                line.style.top = `${dots[i].y}%`;
+                line.style.transform = `rotate(${angle}deg)`;
+                line.style.opacity = '0';
+                constellationContainer.appendChild(line);
+            }
+
+            // 線の出現アニメーション
+            anime({
+                targets: '.constellation-line',
+                opacity: [0, 0.5],
+                scaleX: [0, 1],
+                duration: 2000,
+                delay: anime.stagger(200),
+                easing: 'easeOutQuad',
+                loop: true,
+                direction: 'alternate',
+                endDelay: 1000
+            });
+
+            // ドットの点滅
+            anime({
+                targets: '.constellation-dot',
+                scale: [1, 1.3, 1],
+                opacity: [0.6, 1, 0.6],
+                duration: 1500,
+                delay: anime.stagger(150),
+                easing: 'easeInOutSine',
+                loop: true
+            });
+        }
+
+        // 4. 浮遊する医療アイコンのアニメーション
+        const floatingIcons = document.querySelectorAll('[data-float-icon]');
+        floatingIcons.forEach((icon, index) => {
+            anime({
+                targets: icon,
+                translateY: () => anime.random(-20, 20),
+                translateX: () => anime.random(-15, 15),
+                rotate: () => anime.random(-10, 10),
+                duration: () => anime.random(3000, 5000),
+                delay: index * 300,
+                easing: 'easeInOutQuad',
+                loop: true,
+                direction: 'alternate'
+            });
+        });
+
+        // 5. メイン十字アイコンの回転アニメーション
+        const mainCross = document.getElementById('mainCrossIcon');
+        if (mainCross) {
+            anime({
+                targets: mainCross,
+                rotate: '1turn',
+                duration: 8000,
+                easing: 'linear',
+                loop: true
+            });
+        }
+
+        // 6. 参加ボタンの波紋エフェクト
+        const joinBtn = document.getElementById('joinBtn');
+        if (joinBtn) {
+            joinBtn.addEventListener('mouseenter', (e) => {
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const rect = joinBtn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${e.clientX - rect.left - size/2}px`;
+                ripple.style.top = `${e.clientY - rect.top - size/2}px`;
+                joinBtn.appendChild(ripple);
+
+                anime({
+                    targets: ripple,
+                    scale: [0, 2],
+                    opacity: [0.6, 0],
+                    duration: 600,
+                    easing: 'easeOutQuad',
+                    complete: () => ripple.remove()
+                });
+            });
+        }
+
+        // 7. グリッチテキスト効果（タイトル）
+        const glitchTexts = document.querySelectorAll('.glitch-text');
+        glitchTexts.forEach(text => {
+            setInterval(() => {
+                if (Math.random() > 0.95) {
+                    anime({
+                        targets: text,
+                        skewX: () => anime.random(-10, 10),
+                        duration: 100,
+                        easing: 'linear'
+                    });
+                }
+            }, 100);
+        });
+
+        // 8. モバイルメニューアイテムのスライドイン
+        const menuItems = document.querySelectorAll('.mobile-menu-link');
+        if (menuItems.length > 0) {
+            menuItems.forEach((item, index) => {
+                item.classList.add('menu-item');
+            });
+
+            const menuToggle = document.getElementById('menuToggle');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    setTimeout(() => {
+                        anime({
+                            targets: '.menu-item',
+                            opacity: [0, 1],
+                            translateX: [-30, 0],
+                            duration: 400,
+                            delay: anime.stagger(80),
+                            easing: 'easeOutQuad'
+                        });
+                    }, 100);
+                });
+            }
+        }
+
+        // 9. ハートビートアイコンの連続アニメーション
+        const heartbeatIcons = document.querySelectorAll('.heartbeat');
+        heartbeatIcons.forEach(icon => {
+            anime({
+                targets: icon,
+                scale: [1, 1.25, 1, 1.15, 1],
+                duration: 1200,
+                easing: 'easeInOutQuad',
+                loop: true
+            });
+        });
+
+        // 10. カードの輪郭光アニメーション
+        const glowCards = document.querySelectorAll('.glow-border');
+        glowCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                anime({
+                    targets: card,
+                    scale: 1.02,
+                    duration: 200,
+                    easing: 'easeOutQuad'
+                });
+            });
+            card.addEventListener('mouseleave', () => {
+                anime({
+                    targets: card,
+                    scale: 1,
+                    duration: 200,
+                    easing: 'easeOutQuad'
+                });
+            });
+        });
+
+        // 11. セクション見出しの文字ごとのアニメーション（GSAP と併用）
+        const sectionTitles = document.querySelectorAll('.split-title');
+        sectionTitles.forEach(title => {
+            const chars = title.querySelectorAll('.split-char');
+            if (chars.length > 0) {
+                anime({
+                    targets: chars,
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    rotateX: [-60, 0],
+                    duration: 600,
+                    delay: anime.stagger(40),
+                    easing: 'easeOutBack'
+                });
+            }
+        });
+
+        // 12. スクロール進捗バーのアニメーション（GSAP と併用）
+        const scrollProgress = document.getElementById('scrollProgress');
+        if (scrollProgress) {
+            window.addEventListener('scroll', () => {
+                const scrollPercent = (window.scrollY) / (document.body.scrollHeight - window.innerHeight);
+                scrollProgress.style.transform = `scaleX(${scrollPercent})`;
+            });
+        }
     </script>
 </body>
 </html>
