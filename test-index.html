@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インターネットほけんしつ</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ドットフォント（DotGothic16）と基本のゴシック体を読み込み。後でご自身のニトロDSフォントに差し替えてください -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+    <!-- アイコンライブラリ -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // ご指定の明るい水色をベースカラーに設定
+                        primary: '#c7f0eb', 
+                        primaryDark: '#a3dcd5', // ホバー時などの少し濃い水色
+                        bgMain: '#ffffff', // 白多め
+                        bgSub: '#f8fafc', // セクション背景用の極薄いグレー
+                        textMain: '#334155', // 濃いグレー（真っ黒より柔らかい印象に）
+                        textSub: '#64748b', // 薄いグレー
+                        borderLight: '#e2e8f0', // 薄い枠線
+                    },
+                    fontFamily: {
+                        // 'dot'クラスでドットフォントを適用
+                        dot: ['"nitrods-font","DotGothic16"', 'sans-serif'],
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        // ほけんしつに合う、方眼紙のような可愛いグリッドパターン
+                        'paper-grid': "linear-gradient(#c7f0eb33 1px, transparent 1px), linear-gradient(90deg, #c7f0eb33 1px, transparent 1px)",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ニトロDSフォントの読み込み */
+        @font-face {
+            font-family: 'nitrods-font';
+            src: url('nitrods-font.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #334155;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* 方眼紙背景 */
+        .bg-grid {
+            background-size: 20px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 選択時の色設定 */
+        ::selection {
+            background: #c7f0eb;
+            color: #1e293b;
+        }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; border-left: 1px solid #e2e8f0; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #c7f0eb; }
+        
+        /* * レトロポップなカードパネル
+         * ドットフォントに合うように、少し太めの枠線とソリッドなドロップシャドウを適用
+         */
+        .solid-panel {
+            background: #ffffff;
+            border: 3px solid #334155;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0px #c7f0eb;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+        .solid-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0px #c7f0eb;
+        }
+
+        /* 画像やイラスト用のプレースホルダー */
+        .img-placeholder {
+            background-color: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-family: "nitrods-font","DotGothic16", sans-serif;
+        }
+
+        /* 浮遊アニメーション（全体に優しい動きをつけるため） */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* 十字マーク（ほけんしつのアイコン）用 */
+        .cross-icon {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+        .cross-icon::before, .cross-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #c7f0eb;
+            border: 3px solid #334155;
+            border-radius: 4px;
+        }
+        .cross-icon::before {
+            top: 20%; bottom: 20%; left: 40%; right: 40%;
+        }
+        .cross-icon::after {
+            left: 20%; right: 20%; top: 40%; bottom: 40%;
+        }
+
+        /* ==========================================
+           かくれ演出（保健室の記録カルテが「誤って」開いてしまう感じ）
+           ========================================== */
+        #secretOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #ffffff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            opacity: 0;
+            pointer-events: none;
+        }
+        #secretOverlay.active {
+            pointer-events: all;
+        }
+        #secretOverlay .secret-cross {
+            width: 60px;
+            height: 60px;
+            position: relative;
+        }
+        #secretOverlay .secret-cross::before,
+        #secretOverlay .secret-cross::after {
+            content: '';
+            position: absolute;
+            background-color: #c7f0eb;
+            border: 3px solid #334155;
+            border-radius: 4px;
+        }
+        #secretOverlay .secret-cross::before {
+            top: 20%; bottom: 20%; left: 40%; right: 40%;
+        }
+        #secretOverlay .secret-cross::after {
+            left: 20%; right: 20%; top: 40%; bottom: 40%;
+        }
+        #secretOverlayText {
+            font-family: "nitrods-font","DotGothic16", sans-serif;
+            color: #334155;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+        @keyframes flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+            20%, 22%, 24%, 55% { opacity: 0.2; }
+        }
+        .flicker-active {
+            animation: flicker 0.6s linear;
+        }
+
+        /* ==========================================
+           モバイルメニュー（ハンバーガー）
+           ========================================== */
+        #mobileMenu {
+            max-height: 0;
+        }
+        #mobileMenu.open {
+            max-height: 500px;
+        }
+        /* ハンバーガーがバツ印に変化するアニメーション */
+        #menuToggle.open .hamburger-line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        #menuToggle.open .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        #menuToggle.open .hamburger-line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* ==========================================
+           スマホ用（〜767px）調整CSS
+           ========================================== */
+        @media (max-width: 767px) {
+            /* コンテナの左右余白を少し狭くして画面を有効活用 */
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* ドロップシャドウが大きすぎて窮屈にならないよう縮小 */
+            .solid-panel {
+                box-shadow: 4px 4px 0px #c7f0eb;
+                border-width: 2px;
+            }
+            .solid-panel:hover {
+                transform: translate(-1px, -1px);
+                box-shadow: 5px 5px 0px #c7f0eb;
+            }
+
+            /* ヒーローの十字アイコンを少し小さく */
+            .cross-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            /* セクションの上下余白をスマホ向けに詰める */
+            section {
+                padding-top: 3.5rem;
+                padding-bottom: 3.5rem;
+            }
+            #top {
+                min-height: 85vh;
+            }
+            #join {
+                padding-top: 4.5rem;
+                padding-bottom: 4.5rem;
+            }
+
+            /* JOINセクションの大きいCTAボタンをスマホ向けに縮小・折返し対応 */
+            #join a[href*="discord"] > div {
+                padding: 1.25rem 1.5rem;
+                gap: 0.75rem;
+                box-shadow: 5px 5px 0px #334155;
+            }
+            #join a[href*="discord"] span {
+                font-size: 1.1rem;
+                letter-spacing: 0.05em;
+            }
+            #join a[href*="discord"] i {
+                font-size: 1.75rem;
+            }
+
+            /* JOINセクション上部のイラスト枠を画面幅に収まるよう縮小 */
+            #join .w-64 {
+                width: 80%;
+                max-width: 220px;
+            }
+
+            /* タイプライターのステータスメッセージが画面からはみ出さないよう調整 */
+            #typewriter-text {
+                display: inline-block;
+                max-width: 70vw;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                vertical-align: bottom;
+            }
+
+            /* ヘッダーのロゴ文字が長いのでスマホでは詰める */
+            header nav a[href="#top"] span {
+                font-size: 0.95rem;
+            }
+
+            /* 管理人カードの並びの余白を詰める */
+            #admin .grid, #contents .grid {
+                gap: 1.25rem;
+            }
+        }
+
+        /* さらに小さい画面（〜380px）向けの微調整 */
+        @media (max-width: 380px) {
+            header nav a[href="#top"] span {
+                font-size: 0.8rem;
+            }
+            #join a[href*="discord"] span {
+                font-size: 0.95rem;
+            }
+        }
+
+        /* ==========================================
+           タッチデバイス（スマホ・タブレット）では
+           画面幅に関わらず常にモバイル用ナビを使う
+           （iPhoneを横向きにすると横幅が768pxを超え、
+             md:のブレークポイントでPC版メニューが
+             出てしまう問題への対策）
+           ========================================== */
+        @media (pointer: coarse) {
+            #desktopNav,
+            #headerJoinBtn {
+                display: none !important;
+            }
+            #menuToggle {
+                display: flex !important;
+            }
+            .mobile-menu-wrapper {
+                display: block !important;
+            }
+        }
+
+        /* ==========================================
+           追加アニメーション用CSS
+           ========================================== */
+
+        /* スクロール進捗バー */
+        #scrollProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            width: 100%;
+            background: #334155;
+            transform-origin: left center;
+            transform: scaleX(0);
+            z-index: 100;
+        }
+
+        /* ナビリンクの下線アニメーション */
+        .nav-link {
+            position: relative;
+            display: inline-block;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -4px;
+            width: 100%;
+            height: 2px;
+            background: #a3dcd5;
+            transform: scaleX(0);
+            transform-origin: right center;
+            transition: transform 0.3s ease;
+        }
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left center;
+        }
+
+        /* ヒーローの十字アイコンをふんわり光らせる */
+        .cross-icon {
+            animation: cross-glow 3s ease-in-out infinite;
+        }
+        @keyframes cross-glow {
+            0%, 100% { filter: drop-shadow(0 0 0px #a3dcd5); }
+            50% { filter: drop-shadow(0 0 12px #a3dcd5); }
+        }
+
+        /* カードのマウス追従用（3D傾き） */
+        .solid-panel {
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+
+        /* 参加ボタンの脈動グロー */
+        .cta-pulse {
+            position: relative;
+        }
+        .cta-pulse::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            box-shadow: 0 0 0 0 rgba(51, 65, 85, 0.4);
+            animation: cta-pulse-ring 2.4s ease-out infinite;
+            pointer-events: none;
+        }
+        @keyframes cta-pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(51, 65, 85, 0.35); }
+            70% { box-shadow: 0 0 0 18px rgba(51, 65, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(51, 65, 85, 0); }
+        }
+
+        /* 背景の浮遊ドット装飾 */
+        .float-dot {
+            position: absolute;
+            border-radius: 9999px;
+            background: #c7f0eb;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* セクション見出しの文字を1文字ずつ演出するためのラッパー */
+        .split-title {
+            text-align: center;
+        }
+        .split-char {
+            display: inline-block;
+        }
+
+        /* アイコンのバウンス（コンテンツカードのホバー時） */
+        .icon-bounce {
+            display: inline-flex;
+            transition: transform 0.3s ease;
+        }
+        .group:hover .icon-bounce {
+            animation: icon-bounce-kf 0.6s ease;
+        }
+        @keyframes icon-bounce-kf {
+            0%, 100% { transform: translateY(0) scale(1); }
+            30% { transform: translateY(-6px) scale(1.15); }
+            60% { transform: translateY(2px) scale(0.95); }
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary selection:text-textMain">
+
+    <!-- スクロール進捗バー -->
+    <div id="scrollProgress"></div>
+
+    <!-- 背景のグリッド -->
+    <div class="bg-grid bg-paper-grid"></div>
+
+    <!-- かくしページへの演出用オーバーレイ -->
+    <div id="secretOverlay">
+        <div class="secret-cross"></div>
+        <p id="secretOverlayText" class="font-dot">カルテを取り出しています...</p>
+    </div>
+
+    <!-- 来場者数カウンター（marquee） -->
+    <marquee behavior="scroll" direction="left" scrollamount="5" class="fixed top-0 left-0 w-full z-[60] bg-primary text-textMain font-dot text-sm md:text-base py-1 border-b-2 border-textMain">
+        あなたは <span id="visitorCount">12345</span> 人目のお客様です　★　いつでも遊びに来てくださいね　<a href="TheDaytheStarsFall.html">★</a>　
+    </marquee>
+
+    <!-- グローバルナビゲーション -->
+    <header class="fixed top-[28px] left-0 w-full z-50 transition-all duration-300 bg-white/80 backdrop-blur-md border-b-2 border-primary/50 shadow-sm" id="navbar">
+        <!-- 白背景ですりガラス効果（headerで全幅に適用） -->
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#top" id="logoLink" class="text-xl md:text-2xl font-dot font-bold flex items-center gap-2 group">
+                <!-- 小さな十字アイコン -->
+                <div class="w-6 h-6 relative group-hover:rotate-90 transition-transform duration-300">
+                    <div class="absolute inset-x-2 inset-y-0 bg-primary border-2 border-textMain rounded-sm"></div>
+                    <div class="absolute inset-y-2 inset-x-0 bg-primary border-2 border-textMain border-x-0"></div>
+                </div>
+                <span class="text-textMain">インターネットほけんしつ</span>
+            </a>
+            
+            <div id="desktopNav" class="hidden md:flex space-x-8 font-dot text-sm text-textSub">
+                <a href="#about" class="nav-link hover:text-primaryDark transition-colors">ABOUT</a>
+                <a href="#contents" class="nav-link hover:text-primaryDark transition-colors">CONTENTS</a>
+                <a href="#admin" class="nav-link hover:text-primaryDark transition-colors">ADMIN</a>
+                <a href="news.html" class="nav-link hover:text-primaryDark transition-colors">NEWS</a>
+                <a href="rule.html" class="nav-link hover:text-primaryDark transition-colors">RULE</a>
+            </div>
+
+            <!-- 最初に参加リンク（ヘッダー右上） -->
+            <a href="#join" id="headerJoinBtn" class="hidden md:flex items-center gap-2 bg-textMain text-white px-4 py-2 rounded-full font-dot text-sm hover:bg-primary hover:text-textMain hover:border-textMain border-2 border-transparent transition-all shadow-[2px_2px_0px_#c7f0eb]">
+                <span>入室する</span>
+                <i class="ph ph-door-open text-lg"></i>
+            </a>
+
+            <!-- ハンバーガーメニューボタン（スマホ用） -->
+            <button id="menuToggle" class="md:hidden flex flex-col justify-center items-center w-10 h-10 border-2 border-textMain rounded-lg bg-white" aria-label="メニューを開く" aria-expanded="false">
+                <span class="hamburger-line block w-5 h-0.5 bg-textMain mb-1.5 transition-all duration-300"></span>
+                <span class="hamburger-line block w-5 h-0.5 bg-textMain mb-1.5 transition-all duration-300"></span>
+                <span class="hamburger-line block w-5 h-0.5 bg-textMain transition-all duration-300"></span>
+            </button>
+        </nav>
+
+        <!-- モバイル用ドロップダウンメニュー -->
+        <div id="mobileMenu" class="mobile-menu-wrapper md:hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out bg-white/95 backdrop-blur-md border-b-2 border-primary/50 shadow-sm">
+            <div class="flex flex-col px-6 py-4 gap-4 font-dot text-sm text-textSub">
+                <a href="#about" class="mobile-menu-link py-2 border-b border-borderLight hover:text-primaryDark transition-colors">ABOUT</a>
+                <a href="#contents" class="mobile-menu-link py-2 border-b border-borderLight hover:text-primaryDark transition-colors">CONTENTS</a>
+                <a href="#admin" class="mobile-menu-link py-2 border-b border-borderLight hover:text-primaryDark transition-colors">ADMIN</a>
+                <a href="news.html" class="mobile-menu-link py-2 border-b border-borderLight hover:text-primaryDark transition-colors">NEWS</a>
+                <a href="rule.html" class="mobile-menu-link py-2 border-b border-borderLight hover:text-primaryDark transition-colors">RULE</a>
+                <a href="#join" class="mobile-menu-link flex items-center justify-center gap-2 bg-textMain text-white px-4 py-3 rounded-full font-dot text-sm mt-2">
+                    <span>入室する</span>
+                    <i class="ph ph-door-open text-lg"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 pt-28">
+        <!-- ==========================================
+             HERO SECTION: ファーストビュー・最初のURL
+             ========================================== -->
+        <section id="top" class="relative min-h-[90vh] flex flex-col justify-center items-center overflow-hidden">
+            <!-- 浮遊ドット装飾（パララックス用） -->
+            <div class="float-dot parallax-dot" data-speed="0.15" style="width:18px;height:18px; top:15%; left:10%;"></div>
+            <div class="float-dot parallax-dot" data-speed="0.3" style="width:12px;height:12px; top:65%; left:18%;"></div>
+            <div class="float-dot parallax-dot" data-speed="0.2" style="width:24px;height:24px; top:25%; right:12%;"></div>
+            <div class="float-dot parallax-dot" data-speed="0.4" style="width:10px;height:10px; top:70%; right:20%;"></div>
+            <div class="float-dot parallax-dot" data-speed="0.25" style="width:14px;height:14px; top:45%; left:6%;"></div>
+
+            <div class="z-10 text-center px-4 relative w-full max-w-4xl mx-auto flex flex-col items-center">
+                
+                <!-- レトロなステータスメッセージ -->
+                <div class="font-dot text-textSub mb-8 text-sm tracking-widest border-2 border-primary bg-white py-2 px-6 rounded-full inline-block shadow-sm">
+                    <span id="typewriter-text"></span><span class="animate-pulse">_</span>
+                </div>
+                
+                <!-- メインの十字アイコン -->
+                <div class="cross-icon mb-8 animate-float reveal-hero"></div>
+
+                <!-- メインタイトル -->
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-dot font-bold leading-tight mb-4 text-textMain reveal-title">
+                    インターネット<br>ほけんしつ
+                </h1>
+                
+                <!-- サブタイトル --> 
+                <p class="text-textSub text-lg md:text-xl font-sans mt-4 mb-12 opacity-0 reveal-hero-text max-w-2xl mx-auto">
+                    現実のノイズから少しだけ離れて、<br class="md:hidden">
+                    ゆっくり深呼吸できる、インターネット上の避難所。
+                </p>
+                
+                <!-- 最初のURL / 参加ボタン -->
+                <div class="opacity-0 reveal-hero-text mt-4">
+                    <a href="https://discord.gg/ZKMhEvzjgz" target="_blank" class="inline-flex items-center gap-3 bg-primary border-4 border-textMain text-textMain px-8 py-4 font-dot text-xl rounded-xl hover:-translate-y-1 hover:shadow-[6px_6px_0px_#334155] transition-all duration-200">
+                        <i class="ph ph-discord-logo text-3xl"></i>
+                        <span>サーバーに参加する</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- スクロールダウンインジケーター -->
+            <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+                <span class="font-dot text-xs text-textSub">SCROLL DOWN</span>
+                <i class="ph ph-caret-double-down animate-bounce text-primaryDark text-xl"></i>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             ABOUT SECTION: サーバーの紹介文
+             ========================================== -->
+        <section id="about" class="py-24 relative bg-bgSub border-y-2 border-primary/20">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <!-- セクションヘッダー -->
+                <div class="flex flex-col items-center text-center mb-16 reveal-up">
+                    <div class="w-16 h-2 bg-primary mb-4 rounded-full"></div>
+                    <h2 class="split-title text-3xl md:text-5xl font-dot font-bold text-textMain mb-2">
+                        ここについて
+                    </h2>
+                    <span class="text-textSub font-dot text-sm">ABOUT THIS ROOM</span>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <!-- 左側：紹介文 -->
+                    <div class="reveal-left space-y-6 text-textMain text-lg leading-loose font-sans">
+                        <p>
+                            「インターネットほけんしつ」は、誰でもふらっと立ち寄れる、ゆるい繋がりのコミュニティサーバーです。
+                        </p>
+                        <p>
+                            学校や仕事、SNSの喧騒に疲れた時。<br>
+                            誰かと話したいけれど、気を遣いたくない時。<br>
+                            ただ誰かの作業音を聞きながら、自分も何かしたい時。
+                        </p>
+                        <p class="font-bold border-b-4 border-primary inline-block pb-1">
+                            そんな時に、そっとドアを開けてみてください。
+                        </p>
+                        
+                        <div class="bg-white border-2 border-primaryLight p-4 rounded-lg flex items-start gap-4 mt-8 shadow-sm">
+                            <i class="ph ph-info text-2xl text-primaryDark flex-shrink-0 mt-1"></i>
+                            <p class="text-sm text-textSub">
+                                ここには厳しいルールも、無理なコミュニケーションの強要もありません。あなたのペースで、心地よい距離感を見つけてください。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 右側：イラスト配置用レイアウト -->
+                    <div class="reveal-right">
+                        <div class="solid-panel p-2 aspect-square flex flex-col">
+                            <!-- ここにメインのイメージイラスト等を配置できます -->
+                            <div class="w-full h-full bg-bgSub img-placeholder rounded">
+                                <div class="text-center">
+                                    <i class="ph ph-image text-4xl mb-2 text-textSub/50 mx-auto"></i>
+                                    <p>Image Placeholder<br><span class="text-xs">ほけんしつっぽいイラスト</span></p>
+                                </div>
+                                <!-- 実際の画像を配置する場合は下記を使用 -->
+                                <!-- <img src="your-image.png" alt="イメージ" class="w-full h-full object-cover rounded"> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             CONTENTS SECTION: チャンネルや遊び方の紹介
+             ========================================== -->
+        <section id="contents" class="py-24 bg-bgMain relative">
+            <div class="container mx-auto px-6 max-w-6xl relative z-10">
+                <div class="flex flex-col items-center text-center mb-16 reveal-up">
+                    <div class="w-16 h-2 bg-primary mb-4 rounded-full"></div>
+                    <h2 class="split-title text-3xl md:text-5xl font-dot font-bold text-textMain mb-2">
+                        おへやの案内
+                    </h2>
+                    <span class="text-textSub font-dot text-sm">SERVER CONTENTS</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+                    <!-- ギャラリーへのリンクカード -->
+                    <a href="Gallery.html" class="solid-panel p-6 reveal-up flex flex-col h-full group">
+                        <div class="w-full h-40 mb-6 img-placeholder rounded-md">
+                            <span>ギャラリー画像枠</span>
+                        </div>
+                        <h3 class="text-2xl font-bold font-dot text-textMain mb-3 flex items-center gap-2">
+                            <i class="ph ph-images text-primaryDark icon-bounce"></i>
+                            ギャラリー
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed flex-grow">
+                            メンバーが描いたイラストや撮った写真を集めた特設ギャラリー。ここでしか見られない作品もたくさん。
+                        </p>
+                        <span class="mt-4 font-dot text-xs text-primaryDark flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                            見にいく <i class="ph ph-arrow-right"></i>
+                        </span>
+                    </a>
+
+                    <!-- 案内カード 1 -->
+                    <div class="solid-panel p-6 reveal-up flex flex-col h-full group">
+                        <div class="w-full h-40 mb-6 img-placeholder rounded-md">
+                            <span>イラスト配置用枠</span>
+                        </div>
+                        <h3 class="text-2xl font-bold font-dot text-textMain mb-3 flex items-center gap-2">
+                            <i class="ph ph-coffee text-primaryDark icon-bounce"></i>
+                            ざつだん室
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed flex-grow">
+                            その日あったこと、食べたもの、なんとなく思ったこと。何を話してもいいし、話さなくてもいい。一番人が集まるメインの空間です。
+                        </p>
+                    </div>
+
+                    <!-- 案内カード 2 -->
+                    <div class="solid-panel p-6 reveal-up flex flex-col h-full group" style="transition-delay: 100ms;">
+                        <div class="w-full h-40 mb-6 img-placeholder rounded-md">
+                            <span>イラスト配置用枠</span>
+                        </div>
+                        <h3 class="text-2xl font-bold font-dot text-textMain mb-3 flex items-center gap-2">
+                            <i class="ph ph-headphones text-primaryDark icon-bounce"></i>
+                            おだやか
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed flex-grow">
+                            穏やかに過ごしたい人向け。ゆっくり雑談したり、相談したり、安心して言葉を交わせる空間です。
+                        </p>
+                    </div>
+
+                    <!-- 案内カード 3 -->
+                    <div class="solid-panel p-6 reveal-up flex flex-col h-full group" style="transition-delay: 200ms;">
+                        <div class="w-full h-40 mb-6 img-placeholder rounded-md">
+                            <span>イラスト配置用枠</span>
+                        </div>
+                        <h3 class="text-2xl font-bold font-dot text-textMain mb-3 flex items-center gap-2">
+                            <i class="ph ph-game-controller text-primaryDark icon-bounce"></i>
+                            こんとん
+                        </h3>
+                        <p class="text-textSub font-sans text-sm leading-relaxed flex-grow">
+                            思ったことをそのまま吐き出したい人向け。感情的な話、重たい話、ネガティブな話、勢いのある雑談なども歓迎です。
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             ADMIN SECTION: 管理人（Aさん、Bさん、Cさん、Dさん）
+             ========================================== -->
+        <section id="admin" class="py-24 relative bg-bgSub border-y-2 border-primary/20">
+            <div class="container mx-auto px-6 max-w-5xl">
+                <div class="flex flex-col items-center text-center mb-16 reveal-up">
+                    <div class="w-16 h-2 bg-primary mb-4 rounded-full"></div>
+                    <h2 class="split-title text-3xl md:text-5xl font-dot font-bold text-textMain mb-2">
+                        かんりにん
+                    </h2>
+                    <span class="text-textSub font-dot text-sm">ADMINISTRATORS</span>
+                    <p class="text-textSub font-sans mt-4 max-w-xl">
+                        この場所を維持し、皆さんが安心して過ごせるようサポートしている4人の管理人です。困ったことがあればいつでもメンションしてください。
+                    </p>
+                </div>
+
+                <!-- 4人のグリッドレイアウト -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    <!-- Aさん -->
+                    <div class="solid-panel p-6 flex flex-col items-center text-center reveal-card group">
+                        <!-- アイコン配置用 -->
+                        <div class="w-24 h-24 rounded-full border-4 border-primary overflow-hidden mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <img src="admin/a.png" alt="Aさん" class="w-full h-full object-cover">
+                        </div>
+                        <span class="bg-primary/20 text-primaryDark font-dot text-[10px] px-2 py-1 rounded mb-2 border border-primary">
+                            サーバー主
+                        </span>
+                        <h3 class="text-xl font-bold font-dot text-textMain mb-1">krsm</h3>
+                        <p class="text-textSub text-xs font-sans">
+                            インターネットほけんしつに最初に立ち入った生徒。好きな食べ物は白菜
+                        </p>
+                    </div>
+
+                    <!-- Bさん -->
+                    <div class="solid-panel p-6 flex flex-col items-center text-center reveal-card group" style="transition-delay: 100ms;">
+                        <div class="w-24 h-24 rounded-full border-4 border-primary overflow-hidden mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <img src="admin/b.png" alt="Bさん" class="w-full h-full object-cover">
+                        </div>
+                        <span class="bg-bgSub text-textSub font-dot text-[10px] px-2 py-1 rounded mb-2 border border-borderLight">
+                            モデレーター
+                        </span>
+                        <h3 class="text-xl font-bold font-dot text-textMain mb-1">ここのえ</h3>
+                        <p class="text-textSub text-xs font-sans">
+                            インターネットほけんしつに気付いたらいた人。煙草を吸うときはちゃんと敷地外のコンビニの喫煙所まで移動しているらしい。
+                        </p>
+                    </div>
+
+                    <!-- Cさん -->
+                    <div class="solid-panel p-6 flex flex-col items-center text-center reveal-card group" style="transition-delay: 200ms;">
+                        <div class="w-24 h-24 rounded-full border-4 border-primary overflow-hidden mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <img src="admin/c.png" alt="Cさん" class="w-full h-full object-cover">
+                        </div>
+                        <span class="bg-bgSub text-textSub font-dot text-[10px] px-2 py-1 rounded mb-2 border border-borderLight">
+                            モデレーター
+                        </span>
+                        <h3 class="text-xl font-bold font-dot text-textMain mb-1">Minyooom</h3>
+                        <p class="text-textSub text-xs font-sans">
+                            「名前が1億個あるらしい」
+                        </p>
+                    </div>
+
+                    <!-- Dさん -->
+                    <div class="solid-panel p-6 flex flex-col items-center text-center reveal-card group" style="transition-delay: 300ms;">
+                        <div class="w-24 h-24 rounded-full border-4 border-primary overflow-hidden mb-4 group-hover:scale-110 transition-transform duration-300">
+                            <img src="admin/d.png" alt="Dさん" class="w-full h-full object-cover">
+                        </div>
+                        <span class="bg-bgSub text-textSub font-dot text-[10px] px-2 py-1 rounded mb-2 border border-borderLight">
+                            モデレーター
+                        </span>
+                        <h3 class="text-xl font-bold font-dot text-textMain mb-1">Metalepsis_</h3>
+                        <p class="text-textSub text-xs font-sans">
+                            害を与えるバームクーヘン、ハームクーヘン
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JOIN SECTION: 最後のURL・参加への導線
+             ========================================== -->
+        <section id="join" class="py-32 bg-primary relative overflow-hidden text-center border-t-4 border-textMain">
+            <!-- 背景の装飾ドット模様 -->
+            <div class="absolute inset-0 z-0 opacity-10" style="background-image: radial-gradient(#334155 2px, transparent 2px); background-size: 24px 24px;"></div>
+
+            <div class="container mx-auto px-6 relative z-10">
+                <!-- 最後のイラストプレースホルダー（大きめ） -->
+                <div class="mx-auto w-64 h-48 bg-white border-4 border-textMain rounded-xl mb-10 flex items-center justify-center shadow-[6px_6px_0px_#334155] reveal-up transform -rotate-2">
+                    <span class="font-dot text-textSub">ようこそ！<br>(集合イラストなど)</span>
+                </div>
+
+                <h2 class="split-title text-4xl md:text-6xl font-dot font-bold mb-6 reveal-up text-textMain">
+                    いつでもお待ちしています
+                </h2>
+                <p class="text-textMain/80 font-sans mb-12 max-w-2xl mx-auto reveal-up font-bold bg-white/50 p-4 rounded-lg">
+                    参加ボタンを押すだけで、すぐにほけんしつに入室できます。<br>
+                    見学だけでも大歓迎。ふらっと覗きに来てください。
+                </p>
+
+                <!-- メインCTAボタン（最後） -->
+                <a href="https://discord.gg/ZKMhEvzjgz" target="_blank" class="inline-block reveal-up group">
+                    <div class="cta-pulse relative bg-white text-textMain border-4 border-textMain px-12 py-6 rounded-2xl flex items-center justify-center gap-4 transition-transform transform group-hover:-translate-y-2 shadow-[8px_8px_0px_#334155] hover:shadow-[12px_12px_0px_#334155]">
+                        <i class="ph ph-discord-logo text-4xl text-[#5865F2]"></i>
+                        <span class="font-bold font-dot text-2xl tracking-widest">サーバーに参加する</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- フッター -->
+        <footer class="py-8 bg-textMain text-center font-dot text-sm text-white/70 relative z-10">
+            <div class="flex justify-center items-center gap-2 mb-2">
+                <div class="w-4 h-4 bg-primary rounded-full"></div>
+                <p>インターネットほけんしつ</p>
+            </div>
+            <p>&copy; 2026 インターネットほけんしつ Administration.</p>
+            <p class="mt-2">
+                <a href="https://metalepsis-delta.com/contact" target="_blank" rel="noopener noreferrer" class="text-white/70 hover:text-primary underline transition-colors">
+                    サイトに関するお問い合わせはこちらから
+                </a>
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        // --- モバイルメニュー（ハンバーガー）の開閉制御 ---
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        function closeMobileMenu() {
+            menuToggle.classList.remove('open');
+            mobileMenu.classList.remove('open');
+            menuToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        menuToggle.addEventListener('click', () => {
+            const isOpen = mobileMenu.classList.toggle('open');
+            menuToggle.classList.toggle('open', isOpen);
+            menuToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        // メニュー内のリンクをタップしたら自動で閉じる
+        document.querySelectorAll('.mobile-menu-link').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+
+        // --- GSAP アニメーション設定 ---
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // 1. ヘッダーのスクロール時の背景色変更
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.replace('border-primary/50', 'border-primary');
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.classList.replace('border-primary', 'border-primary/50');
+            }
+        });
+
+        // 1.5 来場者数カウンター表示（ランダム）
+        (function () {
+            const el = document.getElementById('visitorCount');
+            if (!el) return;
+            const num = Math.floor(Math.random() * 9000) + 1000;
+            el.textContent = num.toLocaleString();
+        })();
+
+        // 2. システム起動シーケンス（タイプライター風演出）
+        const tl = gsap.timeline();
+        
+        // ほけんしつらしい、優しいローディングメッセージ
+        const typewriterElement = document.getElementById("typewriter-text");
+        const messages = ["シーツを直しています...", "お茶を淹れています...", "準備完了。いつでもどうぞ。"];
+        
+        tl.to(typewriterElement, {
+            text: messages[0],
+            duration: 1.5,
+            ease: "none"
+        })
+        .to(typewriterElement, {
+            text: messages[1],
+            duration: 1.5,
+            ease: "none",
+            delay: 0.5
+        })
+        .to(typewriterElement, {
+            text: messages[2],
+            duration: 1.5,
+            ease: "none",
+            delay: 0.5
+        })
+        // アイコンの浮上
+        .from(".reveal-hero", {
+            duration: 1.5,
+            scale: 0,
+            opacity: 0,
+            rotation: 180,
+            ease: "back.out(1.5)"
+        }, "-=1")
+        // メインタイトルの出現
+        .from(".reveal-title", {
+            duration: 1,
+            y: 30,
+            opacity: 0,
+            ease: "power3.out"
+        }, "-=1")
+        // サブタイトルとボタンのフェードイン
+        .to(".reveal-hero-text", {
+            duration: 1,
+            opacity: 1,
+            y: 0,
+            ease: "power2.out",
+            stagger: 0.2
+        }, "-=0.5");
+
+
+        // 3. スクロール連動アニメーション
+        const animateOnScroll = (selector, fromVars) => {
+            gsap.utils.toArray(selector).forEach(elem => {
+                gsap.from(elem, {
+                    scrollTrigger: {
+                        trigger: elem,
+                        start: "top 80%",
+                        toggleActions: "play none none reverse"
+                    },
+                    duration: 1.0,
+                    ease: "power3.out",
+                    ...fromVars
+                });
+            });
+        };
+
+        // 各種要素の出現方向定義
+        animateOnScroll('.reveal-up', { y: 40, opacity: 0 });
+        animateOnScroll('.reveal-left', { x: -40, opacity: 0 });
+        animateOnScroll('.reveal-right', { x: 40, opacity: 0 });
+        
+        // カード類のカスケード展開
+        gsap.utils.toArray('.reveal-card').forEach((elem, i) => {
+            gsap.from(elem, {
+                scrollTrigger: {
+                    trigger: elem,
+                    start: "top 85%",
+                },
+                y: 30,
+                opacity: 0,
+                duration: 0.6,
+                delay: i * 0.1, // 順番に出現させる
+                ease: "back.out(1.2)"
+            });
+        });
+
+        // ==========================================
+        // 追加アニメーション
+        // ==========================================
+
+        // 4. スクロール進捗バー
+        gsap.to("#scrollProgress", {
+            scaleX: 1,
+            ease: "none",
+            scrollTrigger: {
+                trigger: document.body,
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 0.3
+            }
+        });
+
+        // 5. ヒーローの浮遊ドットにパララックス効果
+        gsap.utils.toArray('.parallax-dot').forEach((dot) => {
+            const speed = parseFloat(dot.dataset.speed) || 0.2;
+            gsap.to(dot, {
+                y: () => window.innerHeight * speed,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "#top",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+        });
+
+        // 6. セクション見出しを1文字ずつ演出（分割してふわっと出現）
+        gsap.utils.toArray('.split-title').forEach((title) => {
+            const text = title.textContent.trim();
+            title.textContent = "";
+            [...text].forEach((char) => {
+                const span = document.createElement('span');
+                span.className = 'split-char';
+                span.textContent = char === " " ? "\u00A0" : char;
+                title.appendChild(span);
+            });
+
+            gsap.from(title.querySelectorAll('.split-char'), {
+                scrollTrigger: {
+                    trigger: title,
+                    start: "top 85%",
+                    toggleActions: "play none none reverse"
+                },
+                opacity: 0,
+                y: 20,
+                rotateX: -60,
+                duration: 0.6,
+                stagger: 0.04,
+                ease: "back.out(1.7)"
+            });
+        });
+
+        // 7. カードのマウス追従（軽い3D傾き）
+        gsap.utils.toArray('.solid-panel').forEach((card) => {
+            const quickX = gsap.quickTo(card, "rotationY", { duration: 0.4, ease: "power3.out" });
+            const quickY = gsap.quickTo(card, "rotationX", { duration: 0.4, ease: "power3.out" });
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const relX = (e.clientX - rect.left) / rect.width - 0.5;
+                const relY = (e.clientY - rect.top) / rect.height - 0.5;
+                quickX(relX * 10);
+                quickY(-relY * 10);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                quickX(0);
+                quickY(0);
+            });
+        });
+
+        // 8. コンテンツ／かんりにんセクションの見出し下の細いバーを伸縮
+        gsap.utils.toArray('.w-16.h-2.bg-primary').forEach((bar) => {
+            gsap.from(bar, {
+                scrollTrigger: {
+                    trigger: bar,
+                    start: "top 90%",
+                    toggleActions: "play none none reverse"
+                },
+                scaleX: 0,
+                duration: 0.8,
+                ease: "power3.out",
+                transformOrigin: "left center"
+            });
+        });
+
+        // --- 隠しページへの導線（ロゴに何度かカーソルを当てると稀に発生） ---
+        (function () {
+            const logoLink = document.getElementById('logoLink');
+            const overlay = document.getElementById('secretOverlay');
+            const overlayText = document.getElementById('secretOverlayText');
+            if (!logoLink || !overlay) return;
+
+            const MIN_HOVERS = 3;   // これ未満のホバーでは絶対に発生しない
+            const CHANCE = 0.12;    // それ以降、ホバーごとに発生する確率（低め＝「稀に」）
+            let hoverCount = 0;
+            let triggered = false;
+
+            logoLink.addEventListener('mouseenter', () => {
+                if (triggered) return;
+                hoverCount++;
+
+                if (hoverCount >= MIN_HOVERS && Math.random() < CHANCE) {
+                    triggered = true;
+                    playSecretTransition();
+                }
+            });
+
+            function playSecretTransition() {
+                const messages = [
+                    "カルテを取り出しています...",
+                    "……あなた、まだここにいたんですね。",
+                    "少しだけ、見せてあげます。"
+                ];
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        window.location.href = 'hiddendiary.html';
+                    }
+                });
+
+                tl.set(overlay, { display: 'flex' })
+                  .to(overlay, {
+                      opacity: 1,
+                      duration: 0.4,
+                      ease: "power2.out",
+                      onStart: () => overlay.classList.add('active')
+                  })
+                  .call(() => overlayText.classList.add('flicker-active'))
+                  .to(overlayText, { text: messages[0], duration: 0.05 })
+                  .to({}, { duration: 0.9 })
+                  .to(overlayText, { text: messages[1], duration: 0.05 })
+                  .to({}, { duration: 1.1 })
+                  .to(overlayText, { text: messages[2], duration: 0.05 })
+                  .to({}, { duration: 1.0 })
+                  .to(overlay, {
+                      opacity: 1,
+                      duration: 0.3,
+                  })
+                  .to(overlay, {
+                      backgroundColor: '#334155',
+                      duration: 0.5,
+                      ease: "power2.in"
+                  });
+            }
+        })();
+    </script>
+</body>
+</html>
